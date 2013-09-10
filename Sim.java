@@ -10,7 +10,15 @@ public class Sim extends SimState{
 //	public Continuous2D room = new Continuous2D(1.0,100,100);
 	public Network people = new Network(true);
 	public int numPeople = 10;
-	
+    private static Sim theInstance;
+
+    public static synchronized Sim instance() {
+        if (theInstance == null) {
+            theInstance = new Sim();
+        }
+        return theInstance;
+    }
+    
 	public Sim(long seed){
 		super(seed);
 	}

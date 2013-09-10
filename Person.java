@@ -3,6 +3,7 @@ import java.util.Random;
 
 import sim.engine.*;
 import sim.util.*;
+import ec.util.*;
 import sim.field.network.*;
 
 public class Person implements Steppable{
@@ -11,7 +12,7 @@ public class Person implements Steppable{
 	public int numAttr = 10;
 	String name;
 	public int minToFriends = 3;
-	Random generator = new Random( );
+	MersenneTwisterFast generator = Sim.instance().random;
 	Sim sim;
 	int numTimes = 1;
 	int maxIter = 20;
