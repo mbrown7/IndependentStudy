@@ -15,6 +15,8 @@ public class Person implements Steppable{
 	Sim sim;
 	int numTimes = 1;
 	int maxIter = 20;
+	int race;
+	//if race is 1, race is white; if race is 0, race is minority
 	
 	Person( ){
 		boolean okay;
@@ -39,6 +41,16 @@ public class Person implements Steppable{
 		}
 		//I couldn't work out using his random generator so I'm just using
 		//the worse regular one for now
+		
+		//let's pretend we have it set to 80% chance to be white and
+		//20% chance to be a minority
+		int test = generator.nextInt(100);
+		//I might have an OBOE here
+		if(test >= 80){
+			race = 1;
+		}else{
+			race = 0;
+		}
 	}
 	
 	public void step(SimState state){
