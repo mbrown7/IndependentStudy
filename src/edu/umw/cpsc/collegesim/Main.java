@@ -1,7 +1,12 @@
+package edu.umw.cpsc.collegesim;
 import java.util.*;
 
 
-public class main {
+/**
+ *  This main() is currently being used for Maddie's propinquity stuff.
+ *  Morgan is using the Sim class.
+ */
+public class Main {
 
 	static int numGroups = 10; //of course these two variables are changable 
 	static int numStudents = 10;

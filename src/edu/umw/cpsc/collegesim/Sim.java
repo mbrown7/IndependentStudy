@@ -1,3 +1,4 @@
+package edu.umw.cpsc.collegesim;
 import sim.engine.*;
 import sim.util.*;
 import sim.field.network.*;
@@ -14,7 +15,7 @@ public class Sim extends SimState{
 
     public static synchronized Sim instance() {
         if (theInstance == null) {
-            theInstance = new Sim();
+            theInstance = new Sim(0);
         }
         return theInstance;
     }

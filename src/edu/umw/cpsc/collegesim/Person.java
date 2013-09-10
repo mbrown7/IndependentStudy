@@ -1,3 +1,4 @@
+package edu.umw.cpsc.collegesim;
 import java.util.ArrayList;
 import java.util.Random;
 
