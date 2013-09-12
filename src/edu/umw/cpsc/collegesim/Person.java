@@ -9,24 +9,27 @@ import sim.field.network.*;
 
 public class Person implements Steppable{
 
+    public enum Race { WHITE, MINORITY };
+	public static final int TOTAL_NUM_ATTRIBUTES = 50;
+	public static final int NUM_ATTRIBUTES_PER_PERSON = 10;
+	public static final int MIN_TO_FRIENDS = 3;
+
 	private ArrayList<Integer> attributes;
-	public int numAttr = 10;
-	String name;
-	public int minToFriends = 3;
-	MersenneTwisterFast generator = Sim.instance().random;
-	Sim sim;
-	int numTimes = 1;
-	int maxIter = 20;
-	int race;
-	//if race is 1, race is white; if race is 0, race is minority
+	private String name;
+	private MersenneTwisterFast generator = Sim.instance().random;
+	private int numTimes = 1;
+	private static final int MAX_ITER = 20;
 	
-	Person( ){
+    private Race race;
+	
+	Person(String name){
+        this.name = name;
 		boolean okay;
 		attributes = new ArrayList<Integer>( );
 		//we're going to give each person 10 attributes
-		for(int i=0; i<numAttr; i++){
+		for(int i=0; i<NUM_ATTRIBUTES_PER_PERSON; i++){
 			okay = true;
-			int rand = generator.nextInt(50);
+			int rand = generator.nextInt(TOTAL_NUM_ATTRIBUTES);
 			//Check to be sure the attribute is not repeated
 			for(int j=0; j<i; j++){
 				if(attributes.get(j) == rand){
@@ -41,40 +44,38 @@ public class Person implements Steppable{
 				i--;
 			}
 		}
-		//I couldn't work out using his random generator so I'm just using
-		//the worse regular one for now
 		
 		//let's pretend we have it set to 80% chance to be white and
 		//20% chance to be a minority
 		int test = generator.nextInt(100);
 		//I might have an OBOE here
 		if(test >= 80){
-			race = 1;
+			race = Race.WHITE;
 		}else{
-			race = 0;
+			race = Race.MINORITY;
 		}
 	}
 	
 	public void step(SimState state){
-		sim = (Sim) state;
 		int similar = 0;
 		//Creates a bag of all the people
-		Bag peopleBag = sim.people.getAllNodes( );
+		Bag peopleBag = Sim.instance().people.getAllNodes( );
 		//Randomly determines a person that the individual stepping will meet
 		//ensures that the person they are meeting is not themselves
 		Person personToMeet;
 		do{
-			personToMeet = (Person) peopleBag.get(generator.nextInt(sim.numPeople));
+			personToMeet = 
+                (Person) peopleBag.get(generator.nextInt(Sim.NUM_PEOPLE));
 		}while(personToMeet == this);
-		for(int i=0; i<numAttr; i++){
-			for(int j=0; j<numAttr; j++){
+		for(int i=0; i<NUM_ATTRIBUTES_PER_PERSON; i++){
+			for(int j=0; j<NUM_ATTRIBUTES_PER_PERSON; j++){
 				if(personToMeet.attributes.get(j) == attributes.get(i)){
 					similar++;
 				}
 			}
 		}
-		//if they have at least 5 shared traits, then they become friends
-		if(similar >= minToFriends){
+		//if they have at least n shared traits, then they become friends
+		if(similar >= MIN_TO_FRIENDS){
 			//I would like to eventually account for if people are already
 			//friends, so you don't have to add edges that already exist
 			
@@ -90,20 +91,43 @@ public class Person implements Steppable{
 			//ways, so java doesn't count them as actually equal
 			//even if the two nodes are the same
 			
-			sim.people.addEdge(this, personToMeet, 1);
-			sim.people.addEdge(personToMeet, this, 1);
-			System.out.println("Person " + name + " making friends with "
-					+ personToMeet.name);
+            if (!friendsWith(personToMeet)) {
+                Sim.instance().people.addEdge(this, personToMeet, 1);
+            }
 		}
-		if(numTimes >= maxIter){
-			Bag bag = sim.people.getEdgesIn(this);
-			int x = bag.size( );
-			System.out.println("Person " + name + " made " + x + " friends in "
-					+ maxIter + " trials.");
+		if(numTimes >= MAX_ITER){
+            System.out.println(this);
 		}else{
-			sim.schedule.scheduleOnce(this);
+			Sim.instance().schedule.scheduleOnceIn(1,this);
 		}
 		numTimes++;
 	}
+
+    public boolean friendsWith(Person other) {
+        Bag b = Sim.instance().people.getEdgesIn(this);
+
+        for (int i=0; i<b.size(); i++) {
+            Person otherSideOfThisEdge = 
+                (Person) ((Edge)b.get(i)).getOtherNode(this);
+            if (other == otherSideOfThisEdge) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public String toString() {
+        String retval = "Person " + name + " (friends with ";
+        Bag b = Sim.instance().people.getEdgesIn(this);
+        for (int i=0; i<b.size(); i++) {
+            retval += ((Person)(((Edge)b.get(i)).getOtherNode(this))).name;
+            if (i == b.size()-1) {
+                retval += ")";
+            } else {
+                retval += ",";
+            }
+        }
+        return retval;
+    }
 }
 

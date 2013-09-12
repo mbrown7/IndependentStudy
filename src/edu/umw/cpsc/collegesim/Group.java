@@ -9,14 +9,14 @@ import ec.util.*;
 
 public class Group{
 	//all hard coded rands are subject to change
-	int size = 0;//based off how many people join-- affects it for now by decreasing the recruitment factor when increased-- gotta think of a way to scale it though to effect the closeness appropriately 
-	int tightness=0;//based on individual students' willingness to make friends in the group
-	int frequency;//random 1-10
-	double recruitmentFactor;//random 1-10, slowly decreased as more people join
+	private int size = 0;//based off how many people join-- affects it for now by decreasing the recruitment factor when increased-- gotta think of a way to scale it though to effect the closeness appropriately 
+	private int tightness=0;//based on individual students' willingness to make friends in the group
+	private int frequency;//random 1-10
+	private double recruitmentFactor;//random 1-10, slowly decreased as more people join
 	static MersenneTwisterFast rand;
 	
 	
-	ArrayList<Student> students;
+	private ArrayList<Student> students;
 	
 	public Group(){
 		rand = new MersenneTwisterFast();
@@ -27,44 +27,44 @@ public class Group{
 		
 	}
 	
-	void setSize(int s){
+	private void setSize(int s){
 		size=s;
 	}
 	
-	void setTightness(int t){
+	private void setTightness(int t){
 		tightness=t;
 	}
 	
-	void setFrequency(int f){
+	private void setFrequency(int f){
 		frequency=f;
 	}
 	
-	void setRecruitmentFactor(double r){
+	private void setRecruitmentFactor(double r){
 		recruitmentFactor=r;
 	}
 	
-	int getSize(){
+	private int getSize(){
 		return size;
 	}
 	
-	int getTightness(){
+	private int getTightness(){
 		return tightness;
 	}
 	
-	int getFrequency(){
+	private int getFrequency(){
 		return frequency;
 	}
 	
-	double getRecruitmentFactor(){
+	private double getRecruitmentFactor(){
 		return recruitmentFactor;
 	}
 	
-	int getCloseness(){
+	private int getCloseness(){
 		return (int) (tightness+frequency+recruitmentFactor)/3;
 	}
 
-	void printStatement(){
-		System.out.println("Closeness: "+ getCloseness() + " (Size: " + size + " Tightness: " + tightness + " Frequency: " + frequency + " Recruitment Factor: "+ recruitmentFactor + ")");
+	public String toString(){
+		return "Closeness: "+ getCloseness() + " (Size: " + size + " Tightness: " + tightness + " Frequency: " + frequency + " Recruitment Factor: "+ recruitmentFactor + ")";
 	}
 	
 	void recruitStudent(Student s){
