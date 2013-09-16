@@ -16,13 +16,13 @@ public class Group{
 	static MersenneTwisterFast rand;
 	
 	
-	private ArrayList<Student> students;
+	private ArrayList<Person> students;
 	
 	public Group(){
 		rand = new MersenneTwisterFast();
 		frequency=rand.nextInt(10)+1; 
 		recruitmentFactor=rand.nextInt(10)+1; 
-		students = new ArrayList<Student>();
+		students = new ArrayList<Person>();
 		
 		
 	}
@@ -67,7 +67,7 @@ public class Group{
 		return "Closeness: "+ getCloseness() + " (Size: " + size + " Tightness: " + tightness + " Frequency: " + frequency + " Recruitment Factor: "+ recruitmentFactor + ")";
 	}
 	
-	void recruitStudent(Student s){
+	void recruitStudent(Person s){
 		double r = (recruitmentFactor + s.getWillingnessToMakeFriends()+rand.nextInt(10)+1)/3.0;
 		if(r>7){
 			students.add(s);

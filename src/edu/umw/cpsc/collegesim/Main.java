@@ -15,14 +15,15 @@ public class Main {
 	public static void main(String[] args) {
 		
 		
-		ArrayList<Student> students = new ArrayList<Student>();
+		ArrayList<Person> students = new ArrayList<Person>();
 		ArrayList<Group> groups = new ArrayList<Group>();
 		for(int x = 0; x < NUM_GROUPS; x++){
 			groups.add(new Group());
 		}
 		
 		for(int x = 0; x < NUM_STUDENTS; x++){
-			students.add(new Student());
+			String name = Integer.toString(x);
+			students.add(new Person(name));
 		}
 		
 		for(int x = 0; x < NUM_GROUPS; x++){

@@ -18,7 +18,8 @@ public class Sim extends SimState{
 
 	public static final int NUM_PEOPLE = 10;
 
-    private static final long SEED;
+    private static long SEED = 0;
+    //Stephen had the above as final, did not compile for me
     private static Sim theInstance;
 
     public static synchronized Sim instance() {

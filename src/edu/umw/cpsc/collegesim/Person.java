@@ -1,6 +1,5 @@
 package edu.umw.cpsc.collegesim;
 import java.util.ArrayList;
-import java.util.Random;
 
 import sim.engine.*;
 import sim.util.*;
@@ -9,9 +8,11 @@ import sim.field.network.*;
 
 public class Person implements Steppable{
 
+	//818
     public enum Race { WHITE, MINORITY };
 	public static final int TOTAL_NUM_ATTRIBUTES = 50;
-	public static final int NUM_ATTRIBUTES_PER_PERSON = 10;
+	//below must be an int to make sense but must be a double for division
+	public static final double NUM_ATTRIBUTES_PER_PERSON = 10.0;
 	public static final int MIN_TO_FRIENDS = 3;
 
 	private ArrayList<Integer> attributes;
@@ -21,6 +22,20 @@ public class Person implements Steppable{
 	private static final int MAX_ITER = 20;
 	
     private Race race;
+    
+    //from maddie's code
+    static MersenneTwisterFast rand1;
+    int willingnessToMakeFriends;
+	int numGroupsJoined=0;
+	int getWillingnessToMakeFriends(){
+		return willingnessToMakeFriends;
+	}
+	void incNumGroupsJoined(){
+		numGroupsJoined++;
+	}
+	void printStatement(){
+		System.out.println("Willingness: "+willingnessToMakeFriends+" Number of Groups: " + numGroupsJoined);
+	}
 	
 	Person(String name){
         this.name = name;
@@ -54,6 +69,7 @@ public class Person implements Steppable{
 		}else{
 			race = Race.MINORITY;
 		}
+		willingnessToMakeFriends = rand1.nextInt(10)+1;
 	}
 	
 	public void step(SimState state){
@@ -75,26 +91,27 @@ public class Person implements Steppable{
 			}
 		}
 		//if they have at least n shared traits, then they become friends
-		if(similar >= MIN_TO_FRIENDS){
-			//I would like to eventually account for if people are already
-			//friends, so you don't have to add edges that already exist
-			
-			//Represent the friendship in the network
-			
-			//Here's the problem - I can't manage to make it so that you
-			//don't become friends again with someone you already know
-			//So people are making 30 friends out of 9 possibilities
-			//I have tried checking that the edge doesn't already exist in
-			//the graph - this has been the closest to a solution
-			//but the edge object I am able to write is directed
-			//whereas the edge objects that are returned in the bag go both
-			//ways, so java doesn't count them as actually equal
-			//even if the two nodes are the same
-			
-            if (!friendsWith(personToMeet)) {
-                Sim.instance().people.addEdge(this, personToMeet, 1);
-            }
+//		if(similar >= MIN_TO_FRIENDS){
+//			//Represent the friendship in the network
+//            if (!friendsWith(personToMeet)) {
+//                Sim.instance().people.addEdge(this, personToMeet, 1);
+//            }
+//		}
+		
+		double acceptProb = (similar / NUM_ATTRIBUTES_PER_PERSON) * 100;
+		acceptProb = acceptProb + 20.0;
+		if(acceptProb > 100.0){
+			acceptProb = 100.0;
 		}
+		System.out.println("sim is " + similar + " prob is " + acceptProb);
+		int friendProb = generator.nextInt(100);
+		if(friendProb <= acceptProb){
+			if(!friendsWith(personToMeet)){
+				Sim.instance( ).people.addEdge(this, personToMeet, 1);
+			}
+		}
+		//Is this an OBOE?
+		
 		if(numTimes >= MAX_ITER){
             System.out.println(this);
 		}else{
