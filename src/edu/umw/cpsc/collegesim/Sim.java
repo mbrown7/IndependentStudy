@@ -15,10 +15,8 @@ public class Sim extends SimState{
 
     // Undirected graph.
 	public static Network people = new Network(false);
-	
-	public static Network lastMet = new Network(false);
 
-	public static final int NUM_PEOPLE = 3;
+	public static final int NUM_PEOPLE = 10;
 
     private static long SEED = 0;
     //Stephen had the above as final, did not compile for me
@@ -42,12 +40,8 @@ public class Sim extends SimState{
 		for(int i=0; i<NUM_PEOPLE; i++){
 			Person person = new Person(Integer.toString(i));
 			people.addNode(person);
-			lastMet.addNode(person);
 			schedule.scheduleOnce(person);
 		}
-		//I need to see if I can write this so that the decay step always happens last
-		Decay decay = new Decay( );
-		schedule.scheduleOnce(decay);
 	}
 	
 	public static void main(String[] args) {
