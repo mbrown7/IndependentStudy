@@ -215,5 +215,14 @@ System.out.println("They became friends.");
         return retval;
     }
     
+    /**
+     * Based on the possible presence of popular attributes possessed by
+     * the Group's members, possibly absorb one or more of these attributes
+     * into this Person, if he/she does not already have them.
+     */
+    public void possiblyAbsorbAttributesFrom(Group g) {
+        // for now, if you absorb an attribute, just add it, don't try to
+        // even it out by removing one.
+    }
 }
 
