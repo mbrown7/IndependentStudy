@@ -17,14 +17,20 @@ public class Main {
 		
 		ArrayList<Person> students = new ArrayList<Person>();
 		ArrayList<Group> groups = new ArrayList<Group>();
+		Group g;
 		for(int x = 0; x < NUM_GROUPS; x++){
-			groups.add((new Group()).setID(x));
+			g = new Group();
+			g.setID(x);
+			groups.add(g);
 		}
 		
+		Person p;
+		String name;
 		for(int x = 0; x < NUM_STUDENTS; x++){
-			String name = Integer.toString(x);
-			students.add((new Person(name)).setID(x));
-			
+			name = Integer.toString(x);
+			p = new Person(name);
+			p.setID(x);
+			students.add(p);
 		}
 		
 		for(int x = 0; x < NUM_GROUPS; x++){

@@ -3,6 +3,7 @@ package edu.umw.cpsc.collegesim;
 
 import java.util.ArrayList;
 import ec.util.*;
+//811
 
 
 
@@ -30,7 +31,6 @@ public class Group{
 		double r = (recruitmentFactor + s.getWillingnessToMakeFriends()+rand.nextInt(10)+1)/3.0;
 		if(r>7){
 			students.add(s);
-			s.incNumGroupsJoined();
 			double rf= recruitmentFactor-rand.nextDouble();
 			if(rf>1){
 				recruitmentFactor=rf;
@@ -51,45 +51,45 @@ public class Group{
 	}
 	
 	boolean equals(Group a, Group b){
-		if(a.getID==b.groupID){
+		if(a.getID()==b.getID()){
 			return true;
 		}
 		return false;
 	}
 	
-	private void setSize(int s){
+	public void setSize(int s){
 		size=s;
 	}
 	
-	private void setTightness(int t){
+	public void setTightness(int t){
 		tightness=t;
 	}
 	
-	private void setFrequency(int f){
+	public void setFrequency(int f){
 		frequency=f;
 	}
 	
-	private void setRecruitmentFactor(double r){
+	public void setRecruitmentFactor(double r){
 		recruitmentFactor=r;
 	}
 	
-	private int getSize(){
+	public int getSize(){
 		return size;
 	}
 	
-	private int getTightness(){
+	public int getTightness(){
 		return tightness;
 	}
 	
-	private int getFrequency(){
+	public int getFrequency(){
 		return frequency;
 	}
 	
-	private double getRecruitmentFactor(){
+	public double getRecruitmentFactor(){
 		return recruitmentFactor;
 	}
 	
-	private int getCloseness(){
+	public int getCloseness(){
 		return (int) (tightness+frequency+recruitmentFactor)/3;
 	}
 
@@ -97,11 +97,11 @@ public class Group{
 		return "Closeness: "+ getCloseness() + " (Size: " + size + " Tightness: " + tightness + " Frequency: " + frequency + " Recruitment Factor: "+ recruitmentFactor + ")";
 	}
 	
-	private boolean getID(){
+	public int getID(){
 		return id;
 	}
 	
-	private void setID(int i){
+	public void setID(int i){
 		id=i;
 	}
 }
