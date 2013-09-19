@@ -18,12 +18,13 @@ public class Main {
 		ArrayList<Person> students = new ArrayList<Person>();
 		ArrayList<Group> groups = new ArrayList<Group>();
 		for(int x = 0; x < NUM_GROUPS; x++){
-			groups.add(new Group());
+			groups.add((new Group()).setID(x));
 		}
 		
 		for(int x = 0; x < NUM_STUDENTS; x++){
 			String name = Integer.toString(x);
-			students.add(new Person(name));
+			students.add((new Person(name)).setID(x));
+			
 		}
 		
 		for(int x = 0; x < NUM_GROUPS; x++){

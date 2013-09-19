@@ -20,26 +20,18 @@ public class Person implements Steppable{
 	private MersenneTwisterFast generator = Sim.instance().random;
 	private int numTimes = 1;
 	private static final int MAX_ITER = 20;
-	
     private Race race;
     
     //from maddie's code
     static MersenneTwisterFast rand1;
-    int willingnessToMakeFriends;
-	int numGroupsJoined=0;
-	int getWillingnessToMakeFriends(){
-		return willingnessToMakeFriends;
-	}
-	void incNumGroupsJoined(){
-		numGroupsJoined++;
-	}
-	void printStatement(){
-		System.out.println("Willingness: "+willingnessToMakeFriends+" Number of Groups: " + numGroupsJoined);
-	}
+    private int willingnessToMakeFriends;
+	private ArrayList<Group> groups;
+	private int id;
 	
 	Person(String name){
         this.name = name;
 		boolean okay;
+		groups = new ArrayList<Group>();
 		attributes = new ArrayList<Integer>( );
 		//we're going to give each person 10 attributes
 		for(int i=0; i<NUM_ATTRIBUTES_PER_PERSON; i++){
@@ -146,5 +138,37 @@ public class Person implements Steppable{
         }
         return retval;
     }
+    
+    //moved my methods down here
+	int getWillingnessToMakeFriends(){
+		return willingnessToMakeFriends;
+	}
+
+	void joinGroup(Group group){
+		groups.add(group);
+	}
+	
+	boolean isStudentInGroup(Group group){
+		for(int x = 0; x<groups.size();x++){
+			if (groups.get(x).equals(group)){
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	private int getID(){
+		return id;
+	}
+	
+	private void setID(int i){
+		id=i;
+	}
+	
+	void printStatement(){
+		System.out.println("Willingness: "+willingnessToMakeFriends+" Number of Groups: " + groups.size());
+	}
+	
+
 }
 
