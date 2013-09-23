@@ -104,5 +104,25 @@ public class Group{
 	public void setID(int i){
 		id=i;
 	}
+
+    /**
+     * Return a number from 0 to 1 indicating the degree of affinity the
+     *   Person passed has to the existing members of this group.
+     */
+    double affinityTo(Person p) {
+        // write this maddie
+        // ideas:
+        //    for each of the person's attributes, find the avg number of
+        //    group members with that attribute, and then take the avg of
+        //    those averages.
+        //  Ex: The group has persons F, T, Q. The Person in question is
+        //  person A. Person A has three attributes: 1, 4, and 5. Attribute
+        //  1 is owned by F and T. Attribute 4 is owned by F, T, and Q.
+        //  Attribute 5 is owned by no one in the group. So, the affinity
+        //  for Person A to this group is (2/3 + 3/3 + 0/3)/3 = 5/3/3
+        //
+        // question: what to return from this method if the group is empty?
+        // .5?
+    }
 }
 
