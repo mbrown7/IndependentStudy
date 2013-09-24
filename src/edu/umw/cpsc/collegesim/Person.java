@@ -252,5 +252,12 @@ System.out.println("They became friends.");
         // even it out by removing one.
     }
 
+    /**
+     * Return a number from 0 to 1 based on how similar the passed Person
+     * is to this Person.
+     */
+    public double similarityTo(Person other) {
+        // write this morgan
+    }
 }
 
