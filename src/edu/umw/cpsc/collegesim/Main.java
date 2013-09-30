@@ -27,9 +27,8 @@ public class Main {
 		Person p;
 		String name;
 		for(int x = 0; x < NUM_STUDENTS; x++){
-			name = Integer.toString(x);
-			p = new Person(name);
-			p.setID(x);
+			p = new Person(x);
+//			p.setID(x);
 			students.add(p);
 		}
 		

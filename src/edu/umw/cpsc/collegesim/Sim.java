@@ -37,10 +37,10 @@ public class Sim extends SimState{
 	
 	public void start( ){
 		super.start( );
-		//create 10 people, put them in the network, and add them to the
+		//create people, put them in the network, and add them to the
 		//schedule
 		for(int i=0; i<NUM_PEOPLE; i++){
-			Person person = new Person(Integer.toString(i));
+			Person person = new Person(i);
 			people.addNode(person);
 			lastMet.addNode(person);
 			schedule.scheduleOnce(person);

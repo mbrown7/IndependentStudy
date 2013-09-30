@@ -3,7 +3,7 @@ package edu.umw.cpsc.collegesim;
 
 import java.util.ArrayList;
 import ec.util.*;
-//811
+//2:30
 
 
 
@@ -46,9 +46,9 @@ public class Group{
 		}
 	}
 	
-	private boolean doesGroupContainStudent(Person p){
+//	private boolean doesGroupContainStudent(Person p){
 		
-	}
+//	}
 	
 	boolean equals(Group a, Group b){
 		if(a.getID()==b.getID()){
@@ -109,7 +109,7 @@ public class Group{
      * Return a number from 0 to 1 indicating the degree of affinity the
      *   Person passed has to the existing members of this group.
      */
-    double affinityTo(Person p) {
+ //   double affinityTo(Person p) {
         // write this maddie
         // ideas:
         //    for each of the person's attributes, find the avg number of
@@ -123,6 +123,6 @@ public class Group{
         //
         // question: what to return from this method if the group is empty?
         // .5?
-    }
+ //   }
 }
 
