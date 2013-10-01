@@ -376,12 +376,13 @@ System.out.println("Person " + ID + " is meeting person " + personToMeet.ID);
 		}
 		int friendProb = generator.nextInt(100);
 		if(friendProb <= acceptProb){
-System.out.println("They became friends.");
+			System.out.println("They became friends.");
 			return true;
 		}else{
 			return false;
 		}
 	}
+	
 	
 }
 

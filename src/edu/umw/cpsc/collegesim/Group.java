@@ -10,6 +10,7 @@ import ec.util.*;
 
 public class Group{
 	//all hard coded rands are subject to change
+	int NUM_CONSTANT_ATTRIBUTES = 10; //this is to be changed if morgan changes her constant-- maybe talk to stephen about keeping them synched?
 	private int id;
 	private int size = 0;//based off how many people join-- affects it for now by decreasing the recruitment factor when increased-- gotta think of a way to scale it though to effect the closeness appropriately 
 	private int tightness=0;//based on individual students' willingness to make friends in the group
@@ -46,9 +47,14 @@ public class Group{
 		}
 	}
 	
-//	private boolean doesGroupContainStudent(Person p){
-		
-//	}
+	private boolean doesGroupContainStudent(Person p){
+		for (int x = 0; x<students.size(); x++){
+			if (p.getID()==students.get(x).getID()){
+				return true;
+			}
+		}
+		return false;
+	}
 	
 	boolean equals(Group a, Group b){
 		if(a.getID()==b.getID()){
@@ -109,7 +115,13 @@ public class Group{
      * Return a number from 0 to 1 indicating the degree of affinity the
      *   Person passed has to the existing members of this group.
      */
- //   double affinityTo(Person p) {
+    double affinityTo(Person p) {
+    	double temp=0;
+    	for(int x = 0; x<students.size(); x++){
+    		temp = p.similarityTo(students.get(x));
+    	}
+    	return temp/students.size();
+
         // write this maddie
         // ideas:
         //    for each of the person's attributes, find the avg number of
@@ -123,6 +135,8 @@ public class Group{
         //
         // question: what to return from this method if the group is empty?
         // .5?
- //   }
+
+
+    }
 }
 
