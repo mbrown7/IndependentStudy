@@ -11,10 +11,6 @@ public class Person implements Steppable{
 
     public enum Race { WHITE, MINORITY };
     public enum Gender { MALE, FEMALE };
-//	public static final int TOTAL_NUM_ATTRIBUTES = 50;
-	//below must be an int to make sense but must be a double for division
-//	public static final double NUM_ATTRIBUTES_PER_PERSON = 10.0;
-//	public static final int MIN_TO_FRIENDS = 3;
 	public static final int PROBABILITY_WHITE = 80;
 	
 	
@@ -24,12 +20,11 @@ public class Person implements Steppable{
 	public static final double INDEP_WEIGHT = 1.5;
 	public static final double DEP_WEIGHT = 2.5;
 	
-	
-	public static final double BASE_CHANCE_FOR_FRIENDSHIP = 20.0;
+	public static final double FRIENDSHIP_COEFFICIENT = .7;
+	public static final double FRIENDSHIP_INTERCEPT = .2;
 	public static final int PROBABILITY_FEMALE = 50;
 
 	private int ID;
-	//change the above back to private at some point
 	private MersenneTwisterFast generator = Sim.instance( ).random;
 	private int numTimes = 1;
 	private static final int MAX_ITER = 3;
@@ -40,7 +35,6 @@ public class Person implements Steppable{
     //from maddie's code
     private int willingnessToMakeFriends;
     private ArrayList<Group> groups;
-//	int numGroupsJoined=0;
 	
     int NUM_CONSTANT_ATTRIBUTES = 10;
 	//constant attributes, like place of birth, etc.
@@ -57,8 +51,8 @@ public class Person implements Steppable{
 	//common, but if other had 0.2, they would not have this attribute in common
 	double INDEPENDENT_INTERVAL = 0.2;
 	
-    int NUM_DEPENDENT_ATTRIBUTES = 5;
-    int DEPENDENT_ATTRIBUTE_POOL = 20;
+    int NUM_DEPENDENT_ATTRIBUTES = 20;
+    int DEPENDENT_ATTRIBUTE_POOL = 100;
 	//dependent attributes, which can change but you only have 1 unit to split among them
 	//in other words, if one increases, then another decreases
     private ArrayList<Double> attributesK3
@@ -323,25 +317,8 @@ System.out.println("Person " + ID + " is meeting person " + personToMeet.ID);
     	}
     	
     	int depCount = 0;
-    	ArrayList<Double> normalK3This
-    		= new ArrayList<Double>(Collections.nCopies(DEPENDENT_ATTRIBUTE_POOL, 0.0));
-    	ArrayList<Double> normalK3Other
-    		= new ArrayList<Double>(Collections.nCopies(DEPENDENT_ATTRIBUTE_POOL, 0.0));
-    	//we need to normalize the data for this person and the other person    	
-    	//First, we will sum
-    	double sum = 0.0;
-    	double otherSum = 0.0;
-    	for(int i=0; i<DEPENDENT_ATTRIBUTE_POOL; i++){
-    		sum = sum + attributesK3.get(i);
-    		otherSum = otherSum + other.attributesK3.get(i);
-    	}
-    	//Then, we normalize each entry
-    	for(int i=0; i<DEPENDENT_ATTRIBUTE_POOL; i++){
-    		double valThis = attributesK3.get(i)/sum;
-    		normalK3This.set(i,valThis);
-    		double valOther = other.attributesK3.get(i)/otherSum;
-    		normalK3Other.set(i, valOther);
-    	}
+    	ArrayList<Double> normalK3This = normalize(attributesK3);
+    	ArrayList<Double> normalK3Other = normalize(other.attributesK3);
     	//Now, we see if the differences between each attribute are within the interval
        	for(int i=0; i<DEPENDENT_ATTRIBUTE_POOL; i++){
     		double difference = normalK3This.get(i) - normalK3Other.get(i);
@@ -367,30 +344,52 @@ System.out.println("Person " + ID + " is meeting person " + personToMeet.ID);
     }
     
 	public boolean areFriends(double similarities){
-		double maxRating = (NUM_CONSTANT_ATTRIBUTES * CONST_WEIGHT) + (NUM_INDEPENDENT_ATTRIBUTES * INDEP_WEIGHT)
-				+ (NUM_DEPENDENT_ATTRIBUTES * DEP_WEIGHT) + RACE_WEIGHT + GEN_WEIGHT;
-		double acceptProb = (similarities / maxRating) * 100;
-		acceptProb = acceptProb + BASE_CHANCE_FOR_FRIENDSHIP;
-		if(acceptProb > 100.0){
-			acceptProb = 100.0;
-		}
-		int friendProb = generator.nextInt(100);
+		double maxRating = (NUM_CONSTANT_ATTRIBUTES * CONST_WEIGHT) + (INDEPENDENT_ATTRIBUTE_POOL * INDEP_WEIGHT)
+				+ (DEPENDENT_ATTRIBUTE_POOL * DEP_WEIGHT) + RACE_WEIGHT + GEN_WEIGHT;
+		double acceptProb = FRIENDSHIP_COEFFICIENT * (similarities / maxRating) + FRIENDSHIP_INTERCEPT;
+		double friendProb = generator.nextDouble( );
 		if(friendProb <= acceptProb){
-			System.out.println("They became friends.");
+System.out.println("They became friends.");
 			return true;
 		}else{
 			return false;
 		}
 	}
 	
+
+	private ArrayList<Double> normalize(ArrayList<Double> attr){
+		ArrayList<Double> normal = new ArrayList<Double>(Collections.nCopies(DEPENDENT_ATTRIBUTE_POOL, 0.0));
+		double sum = 0.0;
+		for(int i=0; i<DEPENDENT_ATTRIBUTE_POOL; i++){
+    		sum = sum + attr.get(i);
+    	}
+		for(int i=0; i<DEPENDENT_ATTRIBUTE_POOL; i++){
+    		double valThis = attr.get(i)/sum;
+    		normal.set(i,valThis);
+    	}
+		return normal;
+	}
+	
 	public ArrayList<Double> getIndependentAttributes(){
 		return attributesK2;
 	}
 
-	public ArrayList<Double> getDependentAttributes(){
-		return attributesK3;
+	public ArrayList<Double> getDependentAttributes(){		//changed to get the whole ArrayList --ML
+		return normalize(attributesK3);
 	}
 	
+	public void setAttrValue(int index, double val){
+		//this functions says I want the normalized value of attribute index to be val
+		double sum = 0.0;
+		//Take the sum of all of the other non-normalized values
+		for(int i=0; i<DEPENDENT_ATTRIBUTE_POOL; i++){
+			if(index != i){
+				sum = sum + attributesK3.get(i);
+			}
+		}
+		double newNonNormalVal = (val * sum)/(1-val);
+		attributesK3.set(index, newNonNormalVal);
+	}
 }
 
 

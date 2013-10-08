@@ -3,7 +3,6 @@ package edu.umw.cpsc.collegesim;
 
 import java.util.ArrayList;
 import ec.util.*;
-//2:30
 
 
 
@@ -135,7 +134,7 @@ public class Group{
     	ArrayList<Double> dependentAverage = new ArrayList<Double>();
     	double independentTemp;
     	double dependentTemp;
-    	for (int x = 0; x<independentAverage.size(); x++){
+    	for (int x = 0; x<independentAverage.size(); x++){		//when all is working, may want to switch x and y-- I use them for opposite tasks lower in the method 
     		independentTemp=0;
     		dependentTemp=0;
     		for (int y = 0; y<students.size(); y++){
@@ -158,13 +157,13 @@ public class Group{
     			distanceD = dependentAverage.get(y) - students.get(x).getDependentAttributes().get(y);
 
     			if(rand.nextDouble(true,true)>.97 && distanceI>0){	//rand subject to change 
-    				increment = (rand.nextDouble(true,true)/5)*distanceI;
-    				//this is where I call whatever Morgan's code would be to increment that piece-- may require some modification to get a final array at the end of each loop
+    				increment = (rand.nextDouble(true,true)/5)*distanceI; //random number inclusively from 0-1, then divide by 5, then multiply by the distance that attribute is from the group's average
+    				//need method for changing independent attributes that caps attributes at 1
     			}	
 
     			if(rand.nextDouble(true,true)>.97 && distanceD>0){	
     				increment = (rand.nextDouble(true, true)/5)*distanceD;
-    				//same as above
+    				students.get(x).setAttrValue(y, (students.get(x).getDependentAttributes().get(y))+increment);	//Morgan's method
     			}
 
     		}
