@@ -46,8 +46,8 @@ public class Sim extends SimState{
 			schedule.scheduleOnce(person);
 		}
 		//I need to see if I can write this so that the decay step always happens last
-		Decay decay = new Decay( );
-		schedule.scheduleOnce(decay);
+//		Decay decay = new Decay( );
+//		schedule.scheduleOnce(decay);
 	}
 	
 	public static void main(String[] args) {

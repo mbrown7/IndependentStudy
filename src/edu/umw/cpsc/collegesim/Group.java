@@ -3,7 +3,6 @@ package edu.umw.cpsc.collegesim;
 
 import java.util.ArrayList;
 import ec.util.*;
-//2:30
 
 
 
