@@ -20,8 +20,8 @@ public class Person implements Steppable{
 	public static final double INDEP_WEIGHT = 1.5;
 	public static final double DEP_WEIGHT = 2.5;
 	
-	
-	public static final double BASE_CHANCE_FOR_FRIENDSHIP = 20.0;
+	public static final double FRIENDSHIP_COEFFICIENT = .7;
+	public static final double FRIENDSHIP_INTERCEPT = .2;
 	public static final int PROBABILITY_FEMALE = 50;
 
 	private int ID;
@@ -346,12 +346,8 @@ System.out.println("Person " + ID + " is meeting person " + personToMeet.ID);
 	public boolean areFriends(double similarities){
 		double maxRating = (NUM_CONSTANT_ATTRIBUTES * CONST_WEIGHT) + (INDEPENDENT_ATTRIBUTE_POOL * INDEP_WEIGHT)
 				+ (DEPENDENT_ATTRIBUTE_POOL * DEP_WEIGHT) + RACE_WEIGHT + GEN_WEIGHT;
-		double acceptProb = (similarities / maxRating) * 100;
-		acceptProb = acceptProb + BASE_CHANCE_FOR_FRIENDSHIP;
-		if(acceptProb > 100.0){
-			acceptProb = 100.0;
-		}
-		int friendProb = generator.nextInt(100);
+		double acceptProb = FRIENDSHIP_COEFFICIENT * (similarities / maxRating) + FRIENDSHIP_INTERCEPT;
+		double friendProb = generator.nextDouble( );
 		if(friendProb <= acceptProb){
 System.out.println("They became friends.");
 			return true;
