@@ -55,7 +55,7 @@ System.out.println("Looking at person " + person.getID( ));
 					//if the other person has a higher index, meaning we have not yet looked at them
 System.out.println("Looking at when they last met person " + otherPerson.getID( ));
 					//obtain the number of steps since the two last met
-					int steps = ((Integer)edge.getInfo( )).intValue();
+					int steps = (int) edge.getInfo( );
 					//increment this number
 					steps++;
 System.out.println("This was " + steps + " steps ago.");

@@ -14,7 +14,7 @@ public class Group{
 	private int tightness=0;//based on individual students' willingness to make friends in the group
 	private int frequency;//random 1-10
 	private int recruitmentFactor;//random 1-10
-	static MersenneTwisterFast rand;
+	static MersenneTwisterFast rand;	//I think Stephen mentioned to use a MersenneTwist from elsewhere so I don't get a new one each time? *check with Stephen
 	
 	
 	private ArrayList<Person> students;
@@ -28,7 +28,7 @@ public class Group{
 	
 	void recruitStudent(Person s){
 		double r = (2*affinityTo(s) + 2*recruitmentFactor + s.getWillingnessToMakeFriends()+rand.nextInt(10)+1)/6.0; //want to mess with balence here
-		if(r>7){
+		if(r>7){		//to be changed
 			students.add(s);
 		}
 		size = students.size();
@@ -117,7 +117,7 @@ public class Group{
         // write this maddie
         // ideas:
         //    for each of the person's attributes, find the avg number of
-        //    group members with that attribute, and then take the avg of
+        //    group members (with that attribute, and then take the avg of
         //    those averages.
         //  Ex: The group has persons F, T, Q. The Person in question is
         //  person A. Person A has three attributes: 1, 4, and 5. Attribute
