@@ -12,7 +12,7 @@ public class Person implements Steppable{
     public enum Race { WHITE, MINORITY };
     public enum Gender { MALE, FEMALE };
 	public static final int PROBABILITY_WHITE = 80;
-	
+	public static final int PROBABILITY_FEMALE = 50;
 	
 	public static final double RACE_WEIGHT = 3;
 	public static final double GEN_WEIGHT = 1;
@@ -22,12 +22,16 @@ public class Person implements Steppable{
 	
 	public static final double FRIENDSHIP_COEFFICIENT = .7;
 	public static final double FRIENDSHIP_INTERCEPT = .2;
-	public static final int PROBABILITY_FEMALE = 50;
+	
+	//The number of people to meet from groups
+	public static final int NUM_TO_MEET_GROUP = 2;
+	public static final int NUM_TO_MEET_POP = 2;
 
 	private int ID;
 	private MersenneTwisterFast generator = Sim.instance( ).random;
 	private int numTimes = 1;
 	private static final int MAX_ITER = 3;
+	private int decayThreshold = 10;
 	
 	private Race race;
 	private Gender gender;
@@ -38,13 +42,13 @@ public class Person implements Steppable{
 	
     int NUM_CONSTANT_ATTRIBUTES = 10;
 	//constant attributes, like place of birth, etc.
-	private ArrayList<Boolean> attributesK1
-		= new ArrayList<Boolean>(Collections.nCopies(NUM_CONSTANT_ATTRIBUTES, false));	//Added the <Boolean> type thing-- it wasn't compiling without it-- also added to other similar lines --ML
+	private ArrayList<Boolean> attributesK1			//Constant attributes
+		= new ArrayList<Boolean>(Collections.nCopies(NUM_CONSTANT_ATTRIBUTES, false));
 	
     int NUM_INDEPENDENT_ATTRIBUTES = 20;
     int INDEPENDENT_ATTRIBUTE_POOL = 100;
 	//independent attributes, which can change but do not affect each other
-	private ArrayList<Double> attributesK2
+	private ArrayList<Double> attributesK2			//Independent attributes
 		= new ArrayList<Double>(Collections.nCopies(INDEPENDENT_ATTRIBUTE_POOL, 0.0));
 	//the following is the interval inside which two attributes are considered "the same"
 	//so for attribute 14, if this has 0.5 and other has 0.3, they have this attribute in
@@ -55,18 +59,116 @@ public class Person implements Steppable{
     int DEPENDENT_ATTRIBUTE_POOL = 100;
 	//dependent attributes, which can change but you only have 1 unit to split among them
 	//in other words, if one increases, then another decreases
-    private ArrayList<Double> attributesK3
-	= new ArrayList<Double>(Collections.nCopies(DEPENDENT_ATTRIBUTE_POOL, 0.0));
+    private ArrayList<Double> attributesK3			//Dependent attributes
+		= new ArrayList<Double>(Collections.nCopies(DEPENDENT_ATTRIBUTE_POOL, 0.0));
     //the following is the interval inside which two attributes are considered "the same"
   	//so for attribute 14, if this has 0.5 and other has 0.2, they have this attribute in
   	//common, but if other had 0.1, they would not have this attribute in common
   	double DEPENDENT_INTERVAL = 0.3;
+
+  	//A list that will house when this person last met all other people
+  	private ArrayList<Integer> lastMet
+  		= new ArrayList<Integer>(Collections.nCopies(Sim.instance( ).getNumPeople( ), -1));
+
+  	public void setMet(int index, int val){
+  		lastMet.set(index, val);
+  	}
+  	public int getMet(int index){
+  		return lastMet.get(index);
+  	}
+  	public void resetLastMet(int index){
+  		lastMet.set(index, 0);
+  	}
+  	private void incMet( ){
+  		//for the entire last met array
+  		for(int i=0; i<lastMet.size( ); i++){
+  			//if the value is -1, the two have never met
+  			//so we only do something if it's different from -1
+  			int prev = lastMet.get(i);
+  			if(prev != -1){
+  				lastMet.set(i, prev+1);
+  			}
+  		}
+  	}
+  	
+  	private void decay( ){
+  		for(int i=0; i<lastMet.size( ); i++){
+  			Edge toRemoveIn = null;
+  			Edge toRemoveOut = null;
+  			int val = lastMet.get(i);
+  			//if the people last met longer than the threshold ago
+  			if(val > decayThreshold){
+  				//Get a bag of all the edges into this person
+  				Bag bIn = Sim.instance( ).people.getEdgesIn(ID);
+  				//for each of these edges
+  				for(int j=0; j<bIn.size( ); j++){
+  					//look for the person whose ID matches the ID of the person we want to decay
+  					Edge edgeIn = (Edge)bIn.get(j);
+  					Person otherPerson = (Person) edgeIn.getOtherNode(this);
+  					int otherID = otherPerson.getID( );
+  					if(otherID == i){
+  						//when we find the person, make their edge the one we want to remove
+  						toRemoveIn = edgeIn;
+  						j = bIn.size( );
+  					}
+  				}
+  				//Do the same with the other edges
+  				Bag bOut = Sim.instance( ).people.getEdgesOut(ID);
+  				//for each of these edges
+  				for(int j=0; j<bOut.size( ); j++){
+  					//look for the person whose ID matches the ID of the person we want to decay
+  					Edge edgeOut = (Edge)bOut.get(j);
+  					Person otherPerson = (Person) edgeOut.getOtherNode(this);
+  					int otherID = otherPerson.getID( );
+  					if(otherID == i){
+  						//when we find the person, make their edge the one we want to remove
+  						toRemoveOut = edgeOut;
+  						j = bOut.size( );
+  					}
+  				}
+  				Sim.instance( ).people.removeEdge(toRemoveIn);
+  				Sim.instance( ).people.removeEdge(toRemoveOut);
+  				//reset the value to -1, as though they've never met
+  				lastMet.set(i,-1);
+  			}
+  		}
+  	}
+  	
+    private void assignAttribute(int numAttr, int poolSize, ArrayList<Double> attr){
+    	boolean okay;
+    	for(int i=0; i<numAttr; i++){
+    		//pick an attribute to change
+    		int index = generator.nextInt(poolSize);
+    		okay = false;
+    		//while we have not chosen an appropriate index
+    		while(!okay){
+    			//if the attribute is zero, it has not already been changed, so we use it
+    			if(attr.get(index) == 0.0){
+    				okay = true;
+    			//otherwise, we have to pick a new attribute
+    			}else{
+    				index = generator.nextInt(poolSize);
+    			}
+    		}
+    		//pick a degree to which the person will have this attribute
+   			//we generate a number between 0 and 1, including 1 but not including 0
+   			double degree = generator.nextDouble(false, true);
+   			//then we set the attribute at the chosen index to be the generated degree
+   			attr.set(index, degree);
+    	}
+    }
     
-    
+    private boolean assignRaceGender(int probability){
+    	int gen = generator.nextInt(100);
+    	if(gen <= probability){
+    		return true;
+    	}else{
+    		return false;
+    	}
+    }
     
 	Person(int ID){
         this.ID = ID;
-		boolean okay;
 		groups = new ArrayList<Group>( );
 		
 		//Assigning constant attributes
@@ -74,68 +176,21 @@ public class Person implements Steppable{
 			boolean rand = generator.nextBoolean( );
 			attributesK1.set(i, rand);
 		}
-		
 		//Assigning independent attributes
-		//we will be setting a specified number of attributes - the rest will remain 0
-		for(int i=0; i<NUM_INDEPENDENT_ATTRIBUTES; i++){
-			//pick an attribute to change
-			int index = generator.nextInt(INDEPENDENT_ATTRIBUTE_POOL);
-			okay = false;
-			//while we have not chosen an appropriate index
-			while(!okay){
-				//if the attribute is zero, it has not already been changed, so we use it
-				if(attributesK2.get(index) == 0.0){
-					okay = true;
-				//otherwise, we have to pick a new attribute
-				}else{
-					index = generator.nextInt(INDEPENDENT_ATTRIBUTE_POOL);
-				}
-			}
-			//pick a degree to which the person will have this attribute
-			//we generate a number between 0 and 1, including 1 but not including 0
-			double degree = generator.nextDouble(false, true);
-			//then we set the attribute at the chosen index to be the generated degree
-			attributesK2.set(index, degree);
-		}
-		
+		assignAttribute(NUM_INDEPENDENT_ATTRIBUTES, INDEPENDENT_ATTRIBUTE_POOL, attributesK2);
 		//Assigning dependent attributes
-		//we will be setting a specified number of attributes - the rest will remain 0
-		//This is going to be identical to setting the independent attributes - we will
-		//normalize these later, when calculating the similarities between people
-		for(int i=0; i<NUM_DEPENDENT_ATTRIBUTES; i++){
-			//pick an attribute to change
-			int index = generator.nextInt(DEPENDENT_ATTRIBUTE_POOL);
-			okay = false;
-			//while we have not chosen an appropriate index
-			while(!okay){
-				//if the attribute is zero, it has not already been changed, so we use it
-				if(attributesK3.get(index) == 0.0){
-					okay = true;
-				//otherwise, we have to pick a new attribute
-				}else{
-					index = generator.nextInt(DEPENDENT_ATTRIBUTE_POOL);
-				}
-			}
-			//pick a degree to which the person will have this attribute
-			//we generate a number between 0 and 1, including 1 but not including 0
-			double degree = generator.nextDouble(false, true);
-			//then we set the attribute at the chosen index to be the generated degree
-			attributesK3.set(index, degree);
-		}
+		assignAttribute(NUM_DEPENDENT_ATTRIBUTES, DEPENDENT_ATTRIBUTE_POOL, attributesK3);
 		
-		//Assign a race
-		int genRace = generator.nextInt(100);
-		//I might have an OBOE here
-		if(genRace <= PROBABILITY_WHITE){
-			System.out.println(ID + " is white");
+		//Assign a race		
+		boolean white = assignRaceGender(PROBABILITY_WHITE);
+		if(white){
 			race = Race.WHITE;
 		}else{
-			System.out.println(ID + " is a minority");
 			race = Race.MINORITY;
 		}
 		//Assign a gender
-		int genGender = generator.nextInt(100);
-		if(genGender <= PROBABILITY_FEMALE){
+		boolean female = assignRaceGender(PROBABILITY_FEMALE);
+		if(female){
 			gender = Gender.FEMALE;
 		}else{
 			gender = Gender.MALE;
@@ -143,72 +198,76 @@ public class Person implements Steppable{
 		willingnessToMakeFriends = generator.nextInt(10)+1;
 	}
 	
-	public void step(SimState state){
+	//What to do when meeting a new person
+	public void meet(Person personToMeet){
 		double similar;
-		Bag peopleBag = Sim.instance( ).people.getAllNodes( ); //all of the people that exist
-		Person personToMeet;
 		boolean friends = false;
-		boolean decay = false;
-		//Pick a person for this person to meet out of the bag
-		//And do this until the person we choose is not this person
-		do{
-			personToMeet = (Person) peopleBag.get(generator.nextInt(Sim.NUM_PEOPLE));
-		}while(personToMeet == this);
-System.out.println("Person " + ID + " is meeting person " + personToMeet.ID);
-
-		//If they have not met each other before, add them to the lastMet network
-		if(!met(personToMeet)){
-			Sim.instance( ).lastMet.addEdge(this, personToMeet, 0);
+		int personToMeetID = personToMeet.getID( );
+System.out.println("Person " + ID + " is meeting person " + personToMeetID);
+		//Calculate their similarity rating, and then see if they should become friends
+		similar = similarityTo(personToMeet);
+		friends = areFriends(similar);
+		//if they become friends, add their edge to the network
+		//and reset when they met
+		if(friends){
+				Sim.instance( ).people.addEdge(this, personToMeet, 1);
+				resetLastMet(personToMeetID);
+				personToMeet.resetLastMet(ID);
 		}
-
-		//If they are not already friends
-		if(!friendsWith(personToMeet)){
-			//Calculate their similarity rating, and then see if they should become friends
-			similar = similarityTo(personToMeet);
-			friends = areFriends(similar);
-			//if they should become friends, then add them
-			if(friends){// && !decay){
-					Sim.instance( ).people.addEdge(this, personToMeet, 1);
+	}
+	
+	//A function which "tickles" the relationship between "this" and the person whose ID is tickleID
+	public void tickle(Person person){
+		//reset when the two last encountered each other
+		int tickleID = person.getID( );
+		resetLastMet(tickleID);
+		person.resetLastMet(ID);
+	}
+	
+	public void encounter(int number, Bag pool){
+		for(int i=0; i<number; i++){
+			Person personToMeet;
+			do{
+				personToMeet = (Person) pool.get(generator.nextInt(Sim.instance( ).getNumPeople( )));
+			}while(personToMeet == this);
+			if(friendsWith(personToMeet)){
+				tickle(personToMeet);
+			}else{
+				meet(personToMeet);
 			}
 		}
+	}
+	
+	public void step(SimState state){
+		//Need to somehow get a bag of all the people in the group we want to use for encountering
+		Bag bag = null;
+		//encounter(NUM_TO_MEET_GROUP, bag);
+		//Get a bag of all the people and then encounter some number of those people
+		Bag peopleBag = Sim.instance( ).people.getAllNodes( );
+		encounter(NUM_TO_MEET_POP, peopleBag);
+
+
+//NOTE: Decay only matters if the people are friends- you can't decay a friendship that
+//doesn't exist.
+//So, the time they last met only matters if they are friends already or if they
+//become friends this turn
+//If they aren't already friends and if they don't become friends this turn, then -1 for last met is
+//fine
+//(unless we implement something where if two people meet enough times, they become friends by brute
+//force)
 		
-//		Bag bagMet = Sim.instance( ).lastMet.getEdgesIn(this);
-//		
-//		System.out.println("People in this bag and steps since met: ");
-//		for(int j=0; j<bagMet.size( ); j++){
-//			Edge edger = (Edge)bagMet.get(j);
-//			Person womp = (Person) ((Edge)bagMet.get(j)).getOtherNode(this);
-//			int womp2 = (int) edger.getInfo( );
-//			System.out.println(womp.name + " " + womp2);
-//		}
-//		
-//		Edge otherEdge = null;
-//		
-//		for(int i=0; i<bagMet.size( ); i++){
-//			Edge edgeUpdate = (Edge)bagMet.get(i);
-//			Person otherPerson = (Person) ((Edge)bagMet.get(i)).getOtherNode(this);
-//System.out.println("name of other person " + otherPerson.name);
-//			Bag secondBag = Sim.instance( ).lastMet.getEdgesIn(otherPerson);
-//			for(int j=0; j<secondBag.size( ); j++){
-//				Person testPerson = (Person) ((Edge)secondBag.get(j)).getOtherNode(otherPerson);
-//				if(testPerson.equals(this)){
-//					otherEdge = (Edge)secondBag.get(j);
-//				}
-//			}
-//			int steps = (int) edgeUpdate.getInfo( );
-//			steps++;
-//System.out.println("Person " + name + " last met person " + otherPerson.name + " a number of "
-//		+ steps + " step(s) ago.");
-//			if(steps >= NUM_STEPS_TO_DECAY){
-//				System.out.println("decay is true");
-//				decay = true;
-//				Sim.instance( ).lastMet.removeEdge(edgeUpdate);
-////				Sim.instance( ).lastMet.removeEdge(otherEdge);
-//			}else{
-//				Sim.instance( ).lastMet.updateEdge(edgeUpdate, this, otherPerson, steps);
-////				Sim.instance( ).lastMet.updateEdge(otherEdge, otherPerson, this, steps);
-//			}
-//		}
+		//Now, we want to increment the steps since this person has met everyone they are friends with
+		incMet( );
+		//Note that this could cause problems if, for instance, person 1 steps before person 2
+		//and on person 2's turn they meet person 1
+		//so person 2 and person 1 met each other 0 steps ago
+		//but then person 2 finishes and person 2 met person 1 1 step ago
+		//while person 1 met person 2 0 steps ago
+		//I think this may be inconsequential really, and if person 2 surpasses the decay threshold
+		//we'll just remove the friendship anyway even though person 1 hasn't technically surpassed that
+		
+		//Now we want to see if any of the friendships have decayed
+		decay( );
 		
 		//If we've done the maximum number of iterations, then stop; otherwise, keep stepping
 		if(numTimes >= MAX_ITER){
@@ -232,14 +291,12 @@ System.out.println("Person " + ID + " is meeting person " + personToMeet.ID);
     }
     
     public boolean met(Person other){
-    	Bag b = Sim.instance( ).lastMet.getEdgesIn(this);
-    	for(int i=0; i<b.size( ); i++){
-    		Person otherSideOfThisEdge = (Person) ((Edge)b.get(i)).getOtherNode(this);
-    		if(other == otherSideOfThisEdge){
-    			return true;
-    		}
+    	int otherID = other.getID( );
+    	if(lastMet.get(otherID) == -1){
+    		return false;
+    	}else{
+    		return true;
     	}
-    	return false;
     }
 
     public String toString() {
@@ -295,38 +352,47 @@ System.out.println("Person " + ID + " is meeting person " + personToMeet.ID);
      * Return a number from 0 to 1 based on how similar the passed Person
      * is to this Person.
      */
+    
+    private int attrCounter(int num, ArrayList<Boolean> attr1, ArrayList<Boolean> attr2){
+    	int count = 0;
+    	for(int i=0; i<num; i++){
+    		//if they have the same boolean value for an attribute
+    		if(attr1.get(i) == attr2.get(i)){
+    			//increment constant count
+    			count++;
+    		}
+    	}
+    	return count;
+    }
+    
+    private int attrCounter(int num, ArrayList<Double> attr1, ArrayList<Double> attr2, double interval){
+    	int count = 0;
+    	for(int i=0; i<num; i++){
+    		double difference = attr1.get(i) - attr2.get(i);
+    		difference = Math.abs(difference);
+    		//if the difference is within the accept interval
+    		if(difference <= interval){
+    			//increment constant count
+    			count++;
+    		}
+    	}
+    	return count;
+    }
+    
     public double similarityTo(Person other) {
     	double similar = 0.0;
-    	int constantCount = 0;
+    	
     	//Kind 1: Constant
-    	for(int i=0; i<NUM_CONSTANT_ATTRIBUTES; i++){
-    		//if they have the same boolean value for an attribute
-    		if(attributesK1.get(i) == other.attributesK1.get(i)){
-    			//increment constant count
-    			constantCount++;
-    		}
-    	}
+    	int constantCount = attrCounter(NUM_CONSTANT_ATTRIBUTES, attributesK1, other.attributesK1);
     	
-    	int indepCount = 0;
-    	for(int i=0; i<INDEPENDENT_ATTRIBUTE_POOL; i++){
-    		double difference = attributesK2.get(i) - other.attributesK2.get(i);
-    		difference = Math.abs(difference);
-    		if(difference <= INDEPENDENT_INTERVAL){
-    			indepCount++;
-    		}
-    	}
+    	//Kind 2: Independent
+    	int indepCount = attrCounter(INDEPENDENT_ATTRIBUTE_POOL, attributesK2, other.attributesK2, INDEPENDENT_INTERVAL);
     	
-    	int depCount = 0;
+    	//Kind 3: Dependent
     	ArrayList<Double> normalK3This = normalize(attributesK3);
     	ArrayList<Double> normalK3Other = normalize(other.attributesK3);
-    	//Now, we see if the differences between each attribute are within the interval
-       	for(int i=0; i<DEPENDENT_ATTRIBUTE_POOL; i++){
-    		double difference = normalK3This.get(i) - normalK3Other.get(i);
-    		difference = Math.abs(difference);
-    		if(difference <= DEPENDENT_INTERVAL){
-    			depCount++;
-    		}
-    	}
+    	int depCount = attrCounter(DEPENDENT_ATTRIBUTE_POOL, normalK3This, normalK3Other, DEPENDENT_INTERVAL);
+    	
        	//Do they have the same race?
        	int raceCount = 0;
        	if(race == other.race){
@@ -356,9 +422,9 @@ System.out.println("They became friends.");
 		}
 	}
 	
-
 	private ArrayList<Double> normalize(ArrayList<Double> attr){
-		ArrayList<Double> normal = new ArrayList<Double>(Collections.nCopies(DEPENDENT_ATTRIBUTE_POOL, 0.0));
+		ArrayList<Double> normal
+			= new ArrayList<Double>(Collections.nCopies(DEPENDENT_ATTRIBUTE_POOL, 0.0));
 		double sum = 0.0;
 		for(int i=0; i<DEPENDENT_ATTRIBUTE_POOL; i++){
     		sum = sum + attr.get(i);
@@ -370,12 +436,12 @@ System.out.println("They became friends.");
 		return normal;
 	}
 	
+	public ArrayList<Double> getDependentAttributes(){
+		return normalize(attributesK3);
+	}
+	
 	public ArrayList<Double> getIndependentAttributes(){
 		return attributesK2;
-	}
-
-	public ArrayList<Double> getDependentAttributes(){		//changed to get the whole ArrayList --ML
-		return normalize(attributesK3);
 	}
 	
 	public void setAttrValue(int index, double val){

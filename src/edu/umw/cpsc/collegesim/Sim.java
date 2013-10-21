@@ -18,11 +18,14 @@ public class Sim extends SimState{
 	
 	public static Network lastMet = new Network(false);
 
-	public static final int NUM_PEOPLE = 3;
+	private static final int NUM_PEOPLE = 3;
 
     private static long SEED = 0;
-    //Stephen had the above as final, did not compile for me
     private static Sim theInstance;
+    
+    public int getNumPeople( ){
+    	return NUM_PEOPLE;
+    }
 
     public static synchronized Sim instance() {
         if (theInstance == null) {
@@ -45,9 +48,6 @@ public class Sim extends SimState{
 			lastMet.addNode(person);
 			schedule.scheduleOnce(person);
 		}
-		//I need to see if I can write this so that the decay step always happens last
-//		Decay decay = new Decay( );
-//		schedule.scheduleOnce(decay);
 	}
 	
 	public static void main(String[] args) {
