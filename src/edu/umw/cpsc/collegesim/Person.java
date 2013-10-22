@@ -43,12 +43,13 @@ public class Person implements Steppable{
     int NUM_CONSTANT_ATTRIBUTES = 10;
 	//constant attributes, like place of birth, etc.
 	private ArrayList<Boolean> attributesK1
-		= new ArrayList<Boolean>(Collections.nCopies(NUM_CONSTANT_ATTRIBUTES, false));	//Added the <Boolean> type thing-- it wasn't compiling without it-- also added to other similar lines --ML
+	private ArrayList<Boolean> attributesK1			//Constant attributes
+		= new ArrayList<Boolean>(Collections.nCopies(NUM_CONSTANT_ATTRIBUTES, false));
 	
     int NUM_INDEPENDENT_ATTRIBUTES = 20;
     int INDEPENDENT_ATTRIBUTE_POOL = 100;
 	//independent attributes, which can change but do not affect each other
-	private ArrayList<Double> attributesK2
+	private ArrayList<Double> attributesK2			//Independent attributes
 		= new ArrayList<Double>(Collections.nCopies(INDEPENDENT_ATTRIBUTE_POOL, 0.0));
 	//the following is the interval inside which two attributes are considered "the same"
 	//so for attribute 14, if this has 0.5 and other has 0.3, they have this attribute in
@@ -59,7 +60,7 @@ public class Person implements Steppable{
     int DEPENDENT_ATTRIBUTE_POOL = 100;
 	//dependent attributes, which can change but you only have 1 unit to split among them
 	//in other words, if one increases, then another decreases
-    private ArrayList<Double> attributesK3
+    private ArrayList<Double> attributesK3			//Dependent attributes
 		= new ArrayList<Double>(Collections.nCopies(DEPENDENT_ATTRIBUTE_POOL, 0.0));
     //the following is the interval inside which two attributes are considered "the same"
   	//so for attribute 14, if this has 0.5 and other has 0.2, they have this attribute in
@@ -241,7 +242,7 @@ System.out.println("Person " + ID + " is meeting person " + personToMeetID);
 	public void step(SimState state){
 		//Need to somehow get a bag of all the people in the group we want to use for encountering
 		Bag bag = null;
-		encounter(NUM_TO_MEET_GROUP, bag);
+		//encounter(NUM_TO_MEET_GROUP, bag);
 		//Get a bag of all the people and then encounter some number of those people
 		Bag peopleBag = Sim.instance( ).people.getAllNodes( );
 		encounter(NUM_TO_MEET_POP, peopleBag);
@@ -422,7 +423,6 @@ System.out.println("They became friends.");
 		}
 	}
 	
-
 	private ArrayList<Double> normalize(ArrayList<Double> attr){
 		ArrayList<Double> normal
 			= new ArrayList<Double>(Collections.nCopies(DEPENDENT_ATTRIBUTE_POOL, 0.0));
@@ -437,12 +437,12 @@ System.out.println("They became friends.");
 		return normal;
 	}
 	
+	public ArrayList<Double> getDependentAttributes(){
+		return normalize(attributesK3);
+	}
+	
 	public ArrayList<Double> getIndependentAttributes(){
 		return attributesK2;
-	}
-
-	public ArrayList<Double> getDependentAttributes(){		//changed to get the whole ArrayList --ML
-		return normalize(attributesK3);
 	}
 	
 	public void setAttrValue(int index, double val){
