@@ -43,11 +43,7 @@ public class Person implements Steppable{
     int NUM_CONSTANT_ATTRIBUTES = 10;
 	//constant attributes, like place of birth, etc.
 	private ArrayList<Boolean> attributesK1
-<<<<<<< HEAD
-		= new ArrayList<Boolean>(Collections.nCopies(NUM_CONSTANT_ATTRIBUTES, false));
-=======
 		= new ArrayList<Boolean>(Collections.nCopies(NUM_CONSTANT_ATTRIBUTES, false));	//Added the <Boolean> type thing-- it wasn't compiling without it-- also added to other similar lines --ML
->>>>>>> bbbf9a1cff94249b2a6f6c2e03146909f491f1c2
 	
     int NUM_INDEPENDENT_ATTRIBUTES = 20;
     int INDEPENDENT_ATTRIBUTE_POOL = 100;
@@ -64,11 +60,7 @@ public class Person implements Steppable{
 	//dependent attributes, which can change but you only have 1 unit to split among them
 	//in other words, if one increases, then another decreases
     private ArrayList<Double> attributesK3
-<<<<<<< HEAD
 		= new ArrayList<Double>(Collections.nCopies(DEPENDENT_ATTRIBUTE_POOL, 0.0));
-=======
-	= new ArrayList<Double>(Collections.nCopies(DEPENDENT_ATTRIBUTE_POOL, 0.0));
->>>>>>> bbbf9a1cff94249b2a6f6c2e03146909f491f1c2
     //the following is the interval inside which two attributes are considered "the same"
   	//so for attribute 14, if this has 0.5 and other has 0.2, they have this attribute in
   	//common, but if other had 0.1, they would not have this attribute in common
