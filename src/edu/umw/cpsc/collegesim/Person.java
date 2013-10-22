@@ -42,7 +42,6 @@ public class Person implements Steppable{
 	
     int NUM_CONSTANT_ATTRIBUTES = 10;
 	//constant attributes, like place of birth, etc.
-	private ArrayList<Boolean> attributesK1
 	private ArrayList<Boolean> attributesK1			//Constant attributes
 		= new ArrayList<Boolean>(Collections.nCopies(NUM_CONSTANT_ATTRIBUTES, false));
 	
