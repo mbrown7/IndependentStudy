@@ -45,8 +45,8 @@ public class Person implements Steppable{
 	private ArrayList<Boolean> attributesK1			//Constant attributes
 		= new ArrayList<Boolean>(Collections.nCopies(NUM_CONSTANT_ATTRIBUTES, false));
 	
-    int NUM_INDEPENDENT_ATTRIBUTES = 20;
-    int INDEPENDENT_ATTRIBUTE_POOL = 100;
+    int NUM_INDEPENDENT_ATTRIBUTES = 2;
+    int INDEPENDENT_ATTRIBUTE_POOL = 10;
 	//independent attributes, which can change but do not affect each other
 	private ArrayList<Double> attributesK2			//Independent attributes
 		= new ArrayList<Double>(Collections.nCopies(INDEPENDENT_ATTRIBUTE_POOL, 0.0));
@@ -55,8 +55,8 @@ public class Person implements Steppable{
 	//common, but if other had 0.2, they would not have this attribute in common
 	double INDEPENDENT_INTERVAL = 0.2;
 	
-    int NUM_DEPENDENT_ATTRIBUTES = 20;
-    int DEPENDENT_ATTRIBUTE_POOL = 100;
+    int NUM_DEPENDENT_ATTRIBUTES = 2;
+    int DEPENDENT_ATTRIBUTE_POOL = 10;
 	//dependent attributes, which can change but you only have 1 unit to split among them
 	//in other words, if one increases, then another decreases
     private ArrayList<Double> attributesK3			//Dependent attributes
@@ -443,8 +443,12 @@ System.out.println("They became friends.");
 	public ArrayList<Double> getIndependentAttributes(){
 		return attributesK2;
 	}
-	
-	public void setAttrValue(int index, double val){
+
+  public void setIndAttrValue(int index, double val){
+    attributesK2.set(index, val);
+  }
+
+	public void setDepAttrValue(int index, double val){
 		//this functions says I want the normalized value of attribute index to be val
 		double sum = 0.0;
 		//Take the sum of all of the other non-normalized values

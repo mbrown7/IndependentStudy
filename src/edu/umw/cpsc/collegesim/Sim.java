@@ -2,6 +2,7 @@ package edu.umw.cpsc.collegesim;
 import sim.engine.*;
 import sim.util.*;
 import sim.field.network.*;
+import java.util.ArrayList;
 
 
 /**
@@ -15,16 +16,20 @@ public class Sim extends SimState{
 
     // Undirected graph.
 	public static Network people = new Network(false);
-	
 	public static Network lastMet = new Network(false);
-
-	private static final int NUM_PEOPLE = 3;
-
+	private static final int NUM_PEOPLE = 10;
+	private static final int NUM_GROUPS = 5;
+	private static ArrayList<Group> groups = new ArrayList<Group>();
+	private static ArrayList<Person> peopleList = new ArrayList<Person>();
     private static long SEED = 0;
     private static Sim theInstance;
-    
+
     public int getNumPeople( ){
     	return NUM_PEOPLE;
+    }
+
+    public int getNumGroups(){
+    	return NUM_GROUPS;
     }
 
     public static synchronized Sim instance() {
@@ -44,10 +49,20 @@ public class Sim extends SimState{
 		//schedule
 		for(int i=0; i<NUM_PEOPLE; i++){
 			Person person = new Person(i);
+			peopleList.add(person);
 			people.addNode(person);
 			lastMet.addNode(person);
 			schedule.scheduleOnce(person);
 		}
+
+		for(int x = 0; x<NUM_GROUPS; x++){
+			Group group = new Group(x);
+			group.selectStartingStudents(peopleList);
+			group.listMembers();
+			schedule.scheduleOnce(group);
+			groups.add(group);
+		}
+
 	}
 	
 	public static void main(String[] args) {
@@ -60,6 +75,12 @@ public class Sim extends SimState{
                 return Sim.class;
             }
         }, args);
+	}
+
+	public void finish(){
+		for(int x = 0; x<NUM_GROUPS; x++){
+			groups.get(x).listMembers();
+		}
 	}
 
 }
