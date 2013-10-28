@@ -86,7 +86,7 @@ public class Sim extends SimState{
 			groups.get(x).listMembers();
 		}
 		System.out.println("Person 0 should meet:"); //just an example of how getPeopleInGroups() should work
-		ArrayList<Person> peopleInGroups = peopleList.get(0).getPeopleInGroups();
+		Bag peopleInGroups = peopleList.get(0).getPeopleInGroups();
 		for(int x = 0; x < peopleInGroups.size(); x++){
 			System.out.println(peopleInGroups.get(x));
 		}

@@ -30,8 +30,8 @@ public class Person implements Steppable{
 	private int ID;
 	private MersenneTwisterFast generator = Sim.instance( ).random;
 	private int numTimes = 1;
-	private static final int MAX_ITER = 3;
-	private int decayThreshold = 1;
+	private static final int MAX_ITER = 30;
+	private int decayThreshold = 4;
 	
 	private Race race;
 	private Gender gender;
@@ -233,10 +233,13 @@ System.out.println("friends " + friends);
 	}
 	
 	public void encounter(int number, Bag pool){
+		if(pool.size( ) < number){
+			number = pool.size( );
+		}
 		for(int i=0; i<number; i++){
 			Person personToMeet;
 			do{
-				personToMeet = (Person) pool.get(generator.nextInt(Sim.instance( ).getNumPeople( )));
+				personToMeet = (Person) pool.get(generator.nextInt(pool.size( )));
 			}while(personToMeet == this);
 			if(friendsWith(personToMeet)){
 				tickle(personToMeet);
@@ -247,9 +250,9 @@ System.out.println("friends " + friends);
 	}
 	
 	public void step(SimState state){
-		//Need to somehow get a bag of all the people in the group we want to use for encountering
-		Bag bag = null;
-		//encounter(NUM_TO_MEET_GROUP, bag);
+		//Get a bag of all the people in the groups
+		Bag groupBag = getPeopleInGroups( );
+		encounter(NUM_TO_MEET_GROUP, groupBag);
 		//Get a bag of all the people and then encounter some number of those people
 		Bag peopleBag = Sim.instance( ).people.getAllNodes( );
 		encounter(NUM_TO_MEET_POP, peopleBag);
@@ -277,10 +280,10 @@ System.out.println("friends " + friends);
 		//Now we want to see if any of the friendships have decayed
 		decay( );
 		
-		System.out.println(ID + " last met:");
-		for(int i=0; i<lastMet.size( ); i++){
-			System.out.println(i + " " + lastMet.get(i));
-		}
+//		System.out.println(ID + " last met:");
+//		for(int i=0; i<lastMet.size( ); i++){
+//			System.out.println(i + " " + lastMet.get(i));
+//		}
 		
 		
 		//If we've done the maximum number of iterations, then stop; otherwise, keep stepping
@@ -477,24 +480,51 @@ System.out.println("friends " + friends);
 		attributesK3.set(index, newNonNormalVal);
 	}
 
-  public ArrayList<Person> getPeopleInGroups(){
-    ArrayList<Person> groupmates = new ArrayList<Person>();
-    boolean addPerson;
-    for(int x = 0; x < groups.size(); x++){
-      for(int y = 0; y < groups.get(x).getSize(); y++){
-        addPerson = true;
-        for(int z = 0; z < groupmates.size(); z++){
-          if (groups.get(x).getPersonAtIndex(y).equals(groupmates.get(z))){
-            addPerson = false;
-          }
-        }
-        if(addPerson&&!(groups.get(x).getPersonAtIndex(y).equals(this))){
-          groupmates.add(groups.get(x).getPersonAtIndex(y));
-        }
-      }
-    }
-    return groupmates;
-  }
+//  public ArrayList<Person> getPeopleInGroups( ){
+//    ArrayList<Person> groupmates = new ArrayList<Person>();
+//    boolean addPerson;
+//    for(int x = 0; x < groups.size(); x++){
+//      for(int y = 0; y < groups.get(x).getSize(); y++){
+//        addPerson = true;
+//        for(int z = 0; z < groupmates.size(); z++){
+//          if (groups.get(x).getPersonAtIndex(y).equals(groupmates.get(z))){
+//            addPerson = false;
+//          }
+//        }
+//        if(addPerson&&!(groups.get(x).getPersonAtIndex(y).equals(this))){
+//          groupmates.add(groups.get(x).getPersonAtIndex(y));
+//        }
+//      }
+//    }
+//    return groupmates;
+//  }
+	
+	public Bag getPeopleInGroups( ){
+		Bag groupmates = new Bag( );
+		boolean addPerson;
+		boolean first = true;
+		for(int x = 0; x < groups.size( ); x++){
+			for(int y = 0; y < groups.get(x).getSize( ); y++){
+				addPerson = true;
+				Person personToAdd = groups.get(x).getPersonAtIndex(y);
+				if(first){
+					if(!personToAdd.equals(this)){
+						groupmates.add(personToAdd);
+					}
+				}else{
+					for(int z = 0; z < groupmates.size( ); z++){
+						if(personToAdd.equals(groupmates.get(z))){
+							addPerson = false;
+						}
+					}
+					if(addPerson && !(groups.get(x).getPersonAtIndex(y).equals(this))){
+						groupmates.add(groups.get(x).getPersonAtIndex(y));
+					}
+				}
+			}
+		}
+		return groupmates;
+	}
 
   public void leaveGroup(Group g){
     for(int x = 0; x<groups.size(); x++){
