@@ -42,6 +42,7 @@ public class Group implements Steppable{
 				randStudent = people.get(rand.nextInt(people.size()));
 			}
 			students.add(randStudent);
+			randStudent.joinGroup(this);
 		}
 		size = students.size();
 	}
@@ -56,6 +57,7 @@ public class Group implements Steppable{
      	System.out.println("Person " + s.getID() + " looks at group " + id +"\n");
      	if(r>RECRUITMENT_REQUIRED){
      	  students.add(s);
+     	  s.joinGroup(this);
      	  System.out.println("Person " + s.getID() + " joined group " + id +"\n");
      	}
      	size = students.size();
@@ -183,7 +185,7 @@ public class Group implements Steppable{
 	}
 	
 	public int getSize(){
-		return size;
+		return students.size();
 	}
 	
 	public int getTightness(){
@@ -219,6 +221,10 @@ public class Group implements Steppable{
 	
 	public void setID(int i){
 		id=i;
+	}
+
+	public Person getPersonAtIndex(int x){
+		return students.get(x);
 	}
 
 }

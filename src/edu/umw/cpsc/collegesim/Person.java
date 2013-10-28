@@ -460,6 +460,28 @@ System.out.println("They became friends.");
 		double newNonNormalVal = (val * sum)/(1-val);
 		attributesK3.set(index, newNonNormalVal);
 	}
+
+  public ArrayList<Person> getPeopleInGroups(){
+    ArrayList<Person> groupmates = new ArrayList<Person>();
+    boolean addPerson;
+    for(int x = 0; x < groups.size(); x++){
+      for(int y = 0; y < groups.get(x).getSize(); y++){
+        addPerson = true;
+        for(int z = 0; z < groupmates.size(); z++){
+          if (groups.get(x).getPersonAtIndex(y).equals(groupmates.get(z))){
+            addPerson = false;
+          }
+        }
+        if(addPerson&&!(groups.get(x).getPersonAtIndex(y).equals(this))){
+          groupmates.add(groups.get(x).getPersonAtIndex(y));
+        }
+      }
+    }
+    return groupmates;
+  }
+
+
+
 }
 
 
