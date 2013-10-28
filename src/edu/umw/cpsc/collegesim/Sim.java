@@ -32,8 +32,8 @@ public class Sim extends SimState{
     	return NUM_GROUPS;
     }
 
-    public static synchronized Sim instance() {
-        if (theInstance == null) {
+    public static synchronized Sim instance( ){
+        if (theInstance == null){
             theInstance = new Sim(SEED);
         }
         return theInstance;

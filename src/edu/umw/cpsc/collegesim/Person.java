@@ -80,6 +80,7 @@ public class Person implements Steppable{
   		lastMet.set(index, 0);
   	}
   	private void incMet( ){
+  		System.out.println("Incrementing met " + ID);
   		//for the entire last met array
   		for(int i=0; i<lastMet.size( ); i++){
   			//if the value is -1, the two have never met
@@ -92,12 +93,14 @@ public class Person implements Steppable{
   	}
   	
   	private void decay( ){
+  		System.out.println("decay " + ID);
   		for(int i=0; i<lastMet.size( ); i++){
   			Edge toRemoveIn = null;
   			Edge toRemoveOut = null;
   			int val = lastMet.get(i);
   			//if the people last met longer than the threshold ago
   			if(val > decayThreshold){
+  				System.out.println("decaying " + i);
   				//Get a bag of all the edges into this person
   				Bag bIn = Sim.instance( ).people.getEdgesIn(ID);
   				//for each of these edges
@@ -135,6 +138,7 @@ public class Person implements Steppable{
   	}
   	
     private void assignAttribute(int numAttr, int poolSize, ArrayList<Double> attr){
+    	System.out.println("Assigning " + ID);
     	boolean okay;
     	for(int i=0; i<numAttr; i++){
     		//pick an attribute to change
@@ -159,6 +163,7 @@ public class Person implements Steppable{
     }
     
     private boolean assignRaceGender(int probability){
+    	System.out.println("assign race/gender " + ID);
     	int gen = generator.nextInt(100);
     	if(gen <= probability){
     		return true;
@@ -200,13 +205,16 @@ public class Person implements Steppable{
 	
 	//What to do when meeting a new person
 	public void meet(Person personToMeet){
+		System.out.println("meeting " + ID);
 		double similar;
 		boolean friends = false;
 		int personToMeetID = personToMeet.getID( );
 System.out.println("Person " + ID + " is meeting person " + personToMeetID);
 		//Calculate their similarity rating, and then see if they should become friends
 		similar = similarityTo(personToMeet);
+System.out.println("similar " + similar);
 		friends = areFriends(similar);
+System.out.println("friends " + friends);
 		//if they become friends, add their edge to the network
 		//and reset when they met
 		if(friends){
@@ -406,13 +414,14 @@ System.out.println("Person " + ID + " is meeting person " + personToMeetID);
        	//Calculate their similarity rating, taking importance of each category (the weight) into account
     	similar = (constantCount * CONST_WEIGHT) + (indepCount * INDEP_WEIGHT)
     			+ (depCount * DEP_WEIGHT) + (raceCount * RACE_WEIGHT) + (genCount * GEN_WEIGHT);
-		return similar;
+    	double maxRating = (NUM_CONSTANT_ATTRIBUTES * CONST_WEIGHT) + (INDEPENDENT_ATTRIBUTE_POOL * INDEP_WEIGHT)
+				+ (DEPENDENT_ATTRIBUTE_POOL * DEP_WEIGHT) + RACE_WEIGHT + GEN_WEIGHT;
+    	double similarities = similar / maxRating;
+		return similarities;
     }
     
 	public boolean areFriends(double similarities){
-		double maxRating = (NUM_CONSTANT_ATTRIBUTES * CONST_WEIGHT) + (INDEPENDENT_ATTRIBUTE_POOL * INDEP_WEIGHT)
-				+ (DEPENDENT_ATTRIBUTE_POOL * DEP_WEIGHT) + RACE_WEIGHT + GEN_WEIGHT;
-		double acceptProb = FRIENDSHIP_COEFFICIENT * (similarities / maxRating) + FRIENDSHIP_INTERCEPT;
+		double acceptProb = FRIENDSHIP_COEFFICIENT * similarities + FRIENDSHIP_INTERCEPT;
 		double friendProb = generator.nextDouble( );
 		if(friendProb <= acceptProb){
 System.out.println("They became friends.");
