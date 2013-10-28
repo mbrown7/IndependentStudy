@@ -17,8 +17,8 @@ public class Sim extends SimState{
     // Undirected graph.
 	public static Network people = new Network(false);
 	public static Network lastMet = new Network(false);
-	private static final int NUM_PEOPLE = 10;
-	private static final int NUM_GROUPS = 5;
+	private static final int NUM_PEOPLE = 5;
+	private static final int NUM_GROUPS = 0;
 	private static ArrayList<Group> groups = new ArrayList<Group>();
 	private static ArrayList<Person> peopleList = new ArrayList<Person>();
     private static long SEED = 0;
@@ -81,10 +81,10 @@ public class Sim extends SimState{
 		for(int x = 0; x<NUM_GROUPS; x++){
 			groups.get(x).listMembers();
 		}
-		System.out.println("Person 0 should meet:"); //just an example of how getPeopleInGroups() should work
+	//	System.out.println("Person 0 should meet:"); //just an example of how getPeopleInGroups() should work
 		ArrayList<Person> peopleInGroups = peopleList.get(0).getPeopleInGroups();
 		for(int x = 0; x < peopleInGroups.size(); x++){
-			System.out.println(peopleInGroups.get(x));
+	//		System.out.println(peopleInGroups.get(x));
 		}
 	}
 

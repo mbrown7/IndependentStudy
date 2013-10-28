@@ -48,17 +48,17 @@ public class Group implements Steppable{
 	}
 
 	void recruitStudent(Person s){
-		System.out.println("A: " + affinityTo(s));
-		System.out.println("RF: " +recruitmentFactor);
-		System.out.println("Willing: " + s.getWillingnessToMakeFriends());
-		System.out.println("Rand: " + rand.nextInt(10));
+//		System.out.println("A: " + affinityTo(s));
+//		System.out.println("RF: " +recruitmentFactor);
+//		System.out.println("Willing: " + s.getWillingnessToMakeFriends());
+//		System.out.println("Rand: " + rand.nextInt(10));
      	double r = (affinityTo(s) + recruitmentFactor + s.getWillingnessToMakeFriends()+rand.nextInt(10)+1)/4.0; //want to mess with balence here
-     	System.out.println("R: " + r);
-     	System.out.println("Person " + s.getID() + " looks at group " + id +"\n");
+//     	System.out.println("R: " + r);
+//     	System.out.println("Person " + s.getID() + " looks at group " + id +"\n");
      	if(r>RECRUITMENT_REQUIRED){
      	  students.add(s);
      	  s.joinGroup(this);
-     	  System.out.println("Person " + s.getID() + " joined group " + id +"\n");
+//     	  System.out.println("Person " + s.getID() + " joined group " + id +"\n");
      	}
      	size = students.size();
      	int t=0;
@@ -118,7 +118,7 @@ public class Group implements Steppable{
     }
 
    	void influenceMembers(){
-   		System.out.println("**Influence members**");
+//   		System.out.println("**Influence members**");
     	ArrayList<Double> independentAverage = new ArrayList<Double>();
     	ArrayList<Double> dependentAverage = new ArrayList<Double>();
       	double tempTotal;
@@ -151,13 +151,13 @@ public class Group implements Steppable{
           		if(rand.nextDouble(true,true)>.97 && distanceI>0){  //rand subject to change 
             		increment = (rand.nextDouble(true,true)/5)*distanceI; //random number inclusively from 0-1, then divide by 5, then multiply by the distance that attribute is from the group's average
             		students.get(x).setIndAttrValue(y, (students.get(x).getIndependentAttributes().get(y))+increment);
-            		System.out.println("Person " + students.get(x).getID() + "has changed an independent attribute");
+//            		System.out.println("Person " + students.get(x).getID() + "has changed an independent attribute");
           		}  
 
           		if(rand.nextDouble(true,true)>.97 && distanceD>0){  
             		increment = (rand.nextDouble(true, true)/5)*distanceD;
             		students.get(x).setDepAttrValue(y, (students.get(x).getDependentAttributes().get(y))+increment);  //Morgan's method
-          			System.out.println("Person " + students.get(x).getID() + " has changed a dependent attribute");
+//          			System.out.println("Person " + students.get(x).getID() + " has changed a dependent attribute");
           		}
         	}
       	}
@@ -209,9 +209,9 @@ public class Group implements Steppable{
 	}
 
 	public void listMembers(){
-		System.out.println("The following students are in group " + id + ":");
+//		System.out.println("The following students are in group " + id + ":");
 		for(int x = 0; x < students.size(); x++){
-			System.out.println("\t" + students.get(x).getID() +" IA: " + students.get(x).getIndependentAttributes());// + " DA: " + students.get(x).getDependentAttributes());
+//			System.out.println("\t" + students.get(x).getID() +" IA: " + students.get(x).getIndependentAttributes());// + " DA: " + students.get(x).getDependentAttributes());
 		}
 	}
 	
