@@ -9,6 +9,7 @@ import sim.engine.*;
 * Should I change students to people? That way it would be consistant throughout the program
 * maybe change factors to 0-1 rather than 0-10?
 * What are we doing with tightness? Does it help determine recruitement? Or should it deal with leaving a group?
+* maybe have a max/min num students per group factor?
 */
 
 
@@ -16,15 +17,15 @@ public class Group implements Steppable{
 	//all hard coded rands are subject to change
 	private final int RECRUITMENT_REQUIRED = 5;
 	private final int MINIMUM_START_GROUP_SIZE = 3;
-	private final int MAXIMUM_START_GROUP_SIZE = 6; 
-	private final double LIKELYHOOD_OF_RANDOMLY_LEAVING_GROUP = .5;
+	private final int MAXIMUM_START_GROUP_SIZE = 4; 
+	private final double LIKELYHOOD_OF_RANDOMLY_LEAVING_GROUP = .4;
 	private final double LIKELYHOOD_OF_RANDOMLY_CHANGING_ATTRIBUTE = .1;
 	private int id;
 	private int size = 0;//based on how many people join-- affects it for now by decreasing the recruitment factor when increased-- gotta think of a way to scale it though to effect the closeness appropriately 
 	private int tightness=0;//based on individual students' willingness to make friends in the group
 	private int frequency;//random 1-10
 	private int recruitmentFactor;//random 1-10
-	static MersenneTwisterFast rand;	//I think Stephen mentioned to use a MersenneTwist from elsewhere so I don't get a new one each time? *check with Stephen
+	static MersenneTwisterFast rand;
 
 	private ArrayList<Person> students;
 	
@@ -66,7 +67,7 @@ public class Group implements Steppable{
      		if(r>RECRUITMENT_REQUIRED){
      	  		students.add(s);
      	 		s.joinGroup(this);
-     	 		System.out.println("Person " + s.getID() + " joined group " + id +"\n");
+     	 		System.out.println("Person " + s.getID() + " joined group " + id);
      		}
      		size = students.size();
      		int t=0;
@@ -76,8 +77,8 @@ public class Group implements Steppable{
      		if(size>0){
     			tightness = t/size;
  	 		}
- 	 	}
-   	}
+   		}
+    }
 	
 	private boolean doesGroupContainStudent(Person p){
 		for (int x = 0; x<students.size(); x++){
@@ -123,7 +124,7 @@ public class Group implements Steppable{
     }
 
    	void influenceMembers(){
-   		System.out.println("**Influence members**");
+//   		System.out.println("**Influence members**");
     	ArrayList<Double> independentAverage = new ArrayList<Double>();
     	ArrayList<Double> dependentAverage = new ArrayList<Double>();
       	double tempTotal;
@@ -156,13 +157,13 @@ public class Group implements Steppable{
           		if(rand.nextDouble(true,true)<LIKELYHOOD_OF_RANDOMLY_CHANGING_ATTRIBUTE && distanceI>0){  //rand subject to change 
             		increment = (rand.nextDouble(true,true)/5)*distanceI; //random number inclusively from 0-1, then divide by 5, then multiply by the distance that attribute is from the group's average
             		students.get(x).setIndAttrValue(y, (students.get(x).getIndependentAttributes().get(y))+increment);
-            		System.out.println("Person " + students.get(x).getID() + "has changed an independent attribute");
+//            		System.out.println("Person " + students.get(x).getID() + "has changed an independent attribute");
           		}  
 
           		if(rand.nextDouble(true,true)<LIKELYHOOD_OF_RANDOMLY_CHANGING_ATTRIBUTE && distanceD>0){  
             		increment = (rand.nextDouble(true, true)/5)*distanceD;
             		students.get(x).setDepAttrValue(y, (students.get(x).getDependentAttributes().get(y))+increment);  //Morgan's method
-          			System.out.println("Person " + students.get(x).getID() + " has changed a dependent attribute");
+//          			System.out.println("Person " + students.get(x).getID() + " has changed a dependent attribute");
           		}
         	}
       	}
@@ -231,7 +232,7 @@ public class Group implements Steppable{
 	public void listMembers(){
 		System.out.println("The following students are in group " + id + ":");
 		for(int x = 0; x < students.size(); x++){
-			System.out.println("\t" + students.get(x).getID() +" IA: " + students.get(x).getIndependentAttributes());// + " DA: " + students.get(x).getDependentAttributes());
+			System.out.println("\t" + students.get(x));
 		}
 	}
 	

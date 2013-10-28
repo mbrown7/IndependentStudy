@@ -25,13 +25,13 @@ public class Person implements Steppable{
 	
 	//The number of people to meet from groups
 	public static final int NUM_TO_MEET_GROUP = 2;
-	public static final int NUM_TO_MEET_POP = 2;
+	public static final int NUM_TO_MEET_POP = 1;
 
 	private int ID;
 	private MersenneTwisterFast generator = Sim.instance( ).random;
 	private int numTimes = 1;
 	private static final int MAX_ITER = 3;
-	private int decayThreshold = 10;
+	private int decayThreshold = 1;
 	
 	private Race race;
 	private Gender gender;
@@ -46,7 +46,7 @@ public class Person implements Steppable{
 		= new ArrayList<Boolean>(Collections.nCopies(NUM_CONSTANT_ATTRIBUTES, false));
 	
     int NUM_INDEPENDENT_ATTRIBUTES = 2;
-    int INDEPENDENT_ATTRIBUTE_POOL = 10;
+    int INDEPENDENT_ATTRIBUTE_POOL = 5;
 	//independent attributes, which can change but do not affect each other
 	private ArrayList<Double> attributesK2			//Independent attributes
 		= new ArrayList<Double>(Collections.nCopies(INDEPENDENT_ATTRIBUTE_POOL, 0.0));
@@ -56,7 +56,7 @@ public class Person implements Steppable{
 	double INDEPENDENT_INTERVAL = 0.2;
 	
     int NUM_DEPENDENT_ATTRIBUTES = 2;
-    int DEPENDENT_ATTRIBUTE_POOL = 10;
+    int DEPENDENT_ATTRIBUTE_POOL = 5;
 	//dependent attributes, which can change but you only have 1 unit to split among them
 	//in other words, if one increases, then another decreases
     private ArrayList<Double> attributesK3			//Dependent attributes
@@ -80,29 +80,29 @@ public class Person implements Steppable{
   		lastMet.set(index, 0);
   	}
   	private void incMet( ){
-  		System.out.println("Incrementing met " + ID);
+//  		System.out.println("Incrementing met " + ID);
   		//for the entire last met array
   		for(int i=0; i<lastMet.size( ); i++){
   			//if the value is -1, the two have never met
   			//so we only do something if it's different from -1
   			int prev = lastMet.get(i);
+//  			System.out.println("Last met " + i + " " + prev + " steps ago");
   			if(prev != -1){
+ // 				System.out.println("incrementing");
   				lastMet.set(i, prev+1);
   			}
   		}
   	}
   	
   	private void decay( ){
-  		System.out.println("decay " + ID);
   		for(int i=0; i<lastMet.size( ); i++){
   			Edge toRemoveIn = null;
   			Edge toRemoveOut = null;
   			int val = lastMet.get(i);
   			//if the people last met longer than the threshold ago
   			if(val > decayThreshold){
-  				System.out.println("decaying " + i);
   				//Get a bag of all the edges into this person
-  				Bag bIn = Sim.instance( ).people.getEdgesIn(ID);
+  				Bag bIn = Sim.instance( ).people.getEdgesIn(this);
   				//for each of these edges
   				for(int j=0; j<bIn.size( ); j++){
   					//look for the person whose ID matches the ID of the person we want to decay
@@ -116,16 +116,18 @@ public class Person implements Steppable{
   					}
   				}
   				//Do the same with the other edges
-  				Bag bOut = Sim.instance( ).people.getEdgesOut(ID);
+  				Bag bOut = Sim.instance( ).people.getEdgesOut(this);
+  				Person otherPerson = null;
   				//for each of these edges
   				for(int j=0; j<bOut.size( ); j++){
   					//look for the person whose ID matches the ID of the person we want to decay
   					Edge edgeOut = (Edge)bOut.get(j);
-  					Person otherPerson = (Person) edgeOut.getOtherNode(this);
+  					otherPerson = (Person) edgeOut.getOtherNode(this);
   					int otherID = otherPerson.getID( );
   					if(otherID == i){
   						//when we find the person, make their edge the one we want to remove
   						toRemoveOut = edgeOut;
+  						otherPerson.setMet(ID, -1);
   						j = bOut.size( );
   					}
   				}
@@ -138,7 +140,6 @@ public class Person implements Steppable{
   	}
   	
     private void assignAttribute(int numAttr, int poolSize, ArrayList<Double> attr){
-    	System.out.println("Assigning " + ID);
     	boolean okay;
     	for(int i=0; i<numAttr; i++){
     		//pick an attribute to change
@@ -163,7 +164,6 @@ public class Person implements Steppable{
     }
     
     private boolean assignRaceGender(int probability){
-    	System.out.println("assign race/gender " + ID);
     	int gen = generator.nextInt(100);
     	if(gen <= probability){
     		return true;
@@ -205,14 +205,13 @@ public class Person implements Steppable{
 	
 	//What to do when meeting a new person
 	public void meet(Person personToMeet){
-		System.out.println("meeting " + ID);
 		double similar;
 		boolean friends = false;
 		int personToMeetID = personToMeet.getID( );
 System.out.println("Person " + ID + " is meeting person " + personToMeetID);
 		//Calculate their similarity rating, and then see if they should become friends
 		similar = similarityTo(personToMeet);
-System.out.println("similar " + similar);
+//System.out.println("similar " + similar);
 		friends = areFriends(similar);
 System.out.println("friends " + friends);
 		//if they become friends, add their edge to the network
@@ -228,6 +227,7 @@ System.out.println("friends " + friends);
 	public void tickle(Person person){
 		//reset when the two last encountered each other
 		int tickleID = person.getID( );
+		System.out.println("Person " + ID + " is tickling person " + tickleID);
 		resetLastMet(tickleID);
 		person.resetLastMet(ID);
 	}
@@ -276,6 +276,12 @@ System.out.println("friends " + friends);
 		
 		//Now we want to see if any of the friendships have decayed
 		decay( );
+		
+		System.out.println(ID + " last met:");
+		for(int i=0; i<lastMet.size( ); i++){
+			System.out.println(i + " " + lastMet.get(i));
+		}
+		
 		
 		//If we've done the maximum number of iterations, then stop; otherwise, keep stepping
 		if(numTimes >= MAX_ITER){
@@ -422,9 +428,10 @@ System.out.println("friends " + friends);
     
 	public boolean areFriends(double similarities){
 		double acceptProb = FRIENDSHIP_COEFFICIENT * similarities + FRIENDSHIP_INTERCEPT;
+//		System.out.println("accept prob y=mx + b " + acceptProb);
 		double friendProb = generator.nextDouble( );
+//		System.out.println("friend prob " + friendProb);
 		if(friendProb <= acceptProb){
-System.out.println("They became friends.");
 			return true;
 		}else{
 			return false;
