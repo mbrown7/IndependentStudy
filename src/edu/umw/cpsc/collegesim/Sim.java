@@ -17,14 +17,14 @@ public class Sim extends SimState{
     // Undirected graph.
 	public static Network people = new Network(false);
 	public static Network lastMet = new Network(false);
-	private static final int NUM_PEOPLE = 10;
-	private static final int NUM_GROUPS = 5;
+	private static final int NUM_PEOPLE = 5;
+	private static final int NUM_GROUPS = 20;
 	private static ArrayList<Group> groups = new ArrayList<Group>();
 	private static ArrayList<Person> peopleList = new ArrayList<Person>();
     private static long SEED = 0;
     private static Sim theInstance;
 
-    public int getNumPeople( ){
+    public static int getNumPeople( ){
     	return NUM_PEOPLE;
     }
 
@@ -37,6 +37,10 @@ public class Sim extends SimState{
             theInstance = new Sim(SEED);
         }
         return theInstance;
+    }
+
+    public static ArrayList<Person> getPeople(){
+    	return peopleList;
     }
     
 	public Sim(long seed){

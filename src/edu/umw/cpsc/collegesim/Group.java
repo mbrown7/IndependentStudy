@@ -5,19 +5,22 @@ import java.util.ArrayList;
 import ec.util.*;
 import sim.engine.*;
 
-
-
+/*TODO: clean up size stuff, maybe get rid of the variable all together and just keep the setter and use students.size() in the class. 
+* Should I change students to people? That way it would be consistant throughout the program
+* maybe change factors to 0-1 rather than 0-10?
+* What are we doing with tightness? Does it help determine recruitement? Or should it deal with leaving a group?
+*/
 
 
 public class Group implements Steppable{
 	//all hard coded rands are subject to change
-	private final int RECRUITMENT_REQUIRED = 7;
+	private final int RECRUITMENT_REQUIRED = 5;
 	private final int MINIMUM_START_GROUP_SIZE = 3;
-	private final int MAXIMUM_START_GROUP_SIZE = 6; //MUST be lower than the number of total people-- may want to check later
-	private final int INDEPENDENT_ATTRIBUTE_POOL = 10;	//need to find a better way to do this than changing both places
-	private final int DEPENDENT_ATTRIBUTE_POOL = 10;
+	private final int MAXIMUM_START_GROUP_SIZE = 6; 
+	private final double LIKELYHOOD_OF_RANDOMLY_LEAVING_GROUP = .5;
+	private final double LIKELYHOOD_OF_RANDOMLY_CHANGING_ATTRIBUTE = .1;
 	private int id;
-	private int size = 0;//based off how many people join-- affects it for now by decreasing the recruitment factor when increased-- gotta think of a way to scale it though to effect the closeness appropriately 
+	private int size = 0;//based on how many people join-- affects it for now by decreasing the recruitment factor when increased-- gotta think of a way to scale it though to effect the closeness appropriately 
 	private int tightness=0;//based on individual students' willingness to make friends in the group
 	private int frequency;//random 1-10
 	private int recruitmentFactor;//random 1-10
@@ -36,6 +39,9 @@ public class Group implements Steppable{
 	void selectStartingStudents(ArrayList<Person> people){
 		int initialGroupSize = rand.nextInt(MAXIMUM_START_GROUP_SIZE-MINIMUM_START_GROUP_SIZE)+MINIMUM_START_GROUP_SIZE+1;
 		Person randStudent;
+		if(initialGroupSize>Sim.getNumPeople()){
+			initialGroupSize=Sim.getNumPeople(); 		//to insure the initial group size is never greater than the number of total people
+		}
 		for(int x = 0; x < initialGroupSize; x++){
 			randStudent = people.get(rand.nextInt(people.size()));
 			while(doesGroupContainStudent(randStudent)){
@@ -48,25 +54,28 @@ public class Group implements Steppable{
 	}
 
 	void recruitStudent(Person s){
-		System.out.println("A: " + affinityTo(s));
-		System.out.println("RF: " +recruitmentFactor);
-		System.out.println("Willing: " + s.getWillingnessToMakeFriends());
-		System.out.println("Rand: " + rand.nextInt(10));
-     	double r = (affinityTo(s) + recruitmentFactor + s.getWillingnessToMakeFriends()+rand.nextInt(10)+1)/4.0; //want to mess with balence here
-     	System.out.println("R: " + r);
-     	System.out.println("Person " + s.getID() + " looks at group " + id +"\n");
-     	if(r>RECRUITMENT_REQUIRED){
-     	  students.add(s);
-     	  s.joinGroup(this);
-     	  System.out.println("Person " + s.getID() + " joined group " + id +"\n");
-     	}
-     	size = students.size();
-     	int t=0;
-     	for(int x = 0; x<size; x++){
-     		t += students.get(x).getWillingnessToMakeFriends();
-     	}
-     	if(size>0){
-    		tightness = t/size;
+		if(!doesGroupContainStudent(s)){
+			/*System.out.println("A: " + affinityTo(s));
+			System.out.println("RF: " +recruitmentFactor);
+			System.out.println("Willing: " + s.getWillingnessToMakeFriends());
+			System.out.println("Rand: " + rand.nextInt(10));
+			*/
+     		double r = (affinityTo(s) + recruitmentFactor + s.getWillingnessToMakeFriends()*2 + (rand.nextInt(10)+1)*2)/6.0; //want to mess with balence here
+     		System.out.println("\nFinal Recruitment: " + r);
+     		System.out.println("Person " + s.getID() + " looks at group " + id);
+     		if(r>RECRUITMENT_REQUIRED){
+     	  		students.add(s);
+     	 		s.joinGroup(this);
+     	 		System.out.println("Person " + s.getID() + " joined group " + id +"\n");
+     		}
+     		size = students.size();
+     		int t=0;
+     		for(int x = 0; x<size; x++){
+     			t += students.get(x).getWillingnessToMakeFriends();
+     		}
+     		if(size>0){
+    			tightness = t/size;
+ 	 		}
  	 	}
    	}
 	
@@ -80,10 +89,7 @@ public class Group implements Steppable{
 	}
 	
 	boolean equals(Group a){
-		if(id==a.getID()){
-			return true;
-		}
-		return false;
+		return (id==a.getID());
 	}
 
 	 /*
@@ -95,9 +101,8 @@ public class Group implements Steppable{
     		double temp=0;
     		for(int x = 0; x<students.size(); x++){
     			temp = p.similarityTo(students.get(x));
-    			//System.out.println("Temp: "+temp);
     		}
-    		return temp/students.size();
+    		return (temp/students.size()*10);
     	}else{
     		return 5;
     	}
@@ -122,14 +127,14 @@ public class Group implements Steppable{
     	ArrayList<Double> independentAverage = new ArrayList<Double>();
     	ArrayList<Double> dependentAverage = new ArrayList<Double>();
       	double tempTotal;
-      	for (int x = 0; x<INDEPENDENT_ATTRIBUTE_POOL; x++){    
+      	for (int x = 0; x<students.get(0).getIndependentAttributes().size(); x++){    
         	tempTotal=0;
         	for (int y = 0; y<students.size(); y++){
           		tempTotal+=students.get(y).getIndependentAttributes().get(x);
         	}
         	independentAverage.add(tempTotal/students.size());
       	}
-      	for (int x = 0; x<DEPENDENT_ATTRIBUTE_POOL; x++){
+      	for (int x = 0; x<students.get(0).getDependentAttributes().size(); x++){
         	tempTotal=0;
         	for (int y = 0; y<students.size(); y++){
           		tempTotal+=students.get(y).getDependentAttributes().get(x);
@@ -148,13 +153,13 @@ public class Group implements Steppable{
         	for (int y = 0; y<independentAverage.size(); y++){
           		distanceI = independentAverage.get(y) - students.get(x).getIndependentAttributes().get(y);
           		distanceD = dependentAverage.get(y) - students.get(x).getDependentAttributes().get(y);
-          		if(rand.nextDouble(true,true)>.97 && distanceI>0){  //rand subject to change 
+          		if(rand.nextDouble(true,true)<LIKELYHOOD_OF_RANDOMLY_CHANGING_ATTRIBUTE && distanceI>0){  //rand subject to change 
             		increment = (rand.nextDouble(true,true)/5)*distanceI; //random number inclusively from 0-1, then divide by 5, then multiply by the distance that attribute is from the group's average
             		students.get(x).setIndAttrValue(y, (students.get(x).getIndependentAttributes().get(y))+increment);
             		System.out.println("Person " + students.get(x).getID() + "has changed an independent attribute");
           		}  
 
-          		if(rand.nextDouble(true,true)>.97 && distanceD>0){  
+          		if(rand.nextDouble(true,true)<LIKELYHOOD_OF_RANDOMLY_CHANGING_ATTRIBUTE && distanceD>0){  
             		increment = (rand.nextDouble(true, true)/5)*distanceD;
             		students.get(x).setDepAttrValue(y, (students.get(x).getDependentAttributes().get(y))+increment);  //Morgan's method
           			System.out.println("Person " + students.get(x).getID() + " has changed a dependent attribute");
@@ -162,9 +167,24 @@ public class Group implements Steppable{
         	}
       	}
     }
+
+    public void possiblyLeaveGroup(Person p){
+    	if(rand.nextDouble(true,true)<LIKELYHOOD_OF_RANDOMLY_LEAVING_GROUP){
+    		p.leaveGroup(this);
+    		removeStudent(p);
+    		System.out.println("Removing Student "+p.getID()+" from group " + id);
+    	}
+    }
       
     public void step(SimState state){
+    	ArrayList<Person> allPeople = Sim.getPeople();
     	influenceMembers();
+    	for(int x = 0; x<allPeople.size(); x++){
+    		recruitStudent(allPeople.get(x));
+    	}
+    	for(int x = 0; x<students.size(); x++){
+    		possiblyLeaveGroup(students.get(x));
+    	}
  	}
 
 	
@@ -226,6 +246,14 @@ public class Group implements Steppable{
 	public Person getPersonAtIndex(int x){
 		return students.get(x);
 	}
+
+	public void removeStudent(Person p){
+    	for(int x = 0; x<students.size(); x++){
+      		if(students.get(x).equals(p)){
+        		students.remove(x);
+      		}
+    	}
+  	}
 
 }
 

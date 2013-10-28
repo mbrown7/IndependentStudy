@@ -489,6 +489,18 @@ System.out.println("They became friends.");
     return groupmates;
   }
 
+  public void leaveGroup(Group g){
+    for(int x = 0; x<groups.size(); x++){
+      if(groups.get(x).equals(g)){
+        groups.remove(x);
+      }
+    }
+  }
+
+  public boolean equals(Person p){
+    return(ID==p.getID());
+  }
+
 
 
 }
