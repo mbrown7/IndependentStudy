@@ -17,8 +17,8 @@ public class Sim extends SimState{
     // Undirected graph.
 	public static Network people = new Network(false);
 	public static Network lastMet = new Network(false);
-	private static final int NUM_PEOPLE = 10;
-	private static final int NUM_GROUPS = 5;
+	private static final int NUM_PEOPLE = 100;
+	private static final int NUM_GROUPS = 30;
 	private static ArrayList<Group> groups = new ArrayList<Group>();
 	private static ArrayList<Person> peopleList = new ArrayList<Person>();
     private static long SEED = 0;

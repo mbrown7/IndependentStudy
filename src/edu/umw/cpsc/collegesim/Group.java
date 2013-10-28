@@ -15,10 +15,10 @@ import sim.engine.*;
 
 public class Group implements Steppable{
 	//all hard coded rands are subject to change
-	private final int RECRUITMENT_REQUIRED = 5;
 	private final int MINIMUM_START_GROUP_SIZE = 3;
-	private final int MAXIMUM_START_GROUP_SIZE = 4; 
-	private final double LIKELYHOOD_OF_RANDOMLY_LEAVING_GROUP = .4;
+	private final int MAXIMUM_START_GROUP_SIZE = 8; 
+	private final int RECRUITMENT_REQUIRED = 8;			//lower this to accept more students in group per step
+	private final double LIKELYHOOD_OF_RANDOMLY_LEAVING_GROUP = .1;		//increase this to remove more students in group per step
 	private final double LIKELYHOOD_OF_RANDOMLY_CHANGING_ATTRIBUTE = .1;
 	private int id;
 	private int size = 0;//based on how many people join-- affects it for now by decreasing the recruitment factor when increased-- gotta think of a way to scale it though to effect the closeness appropriately 
