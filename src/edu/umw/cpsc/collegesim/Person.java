@@ -66,41 +66,26 @@ public class Person implements Steppable{
   	//common, but if other had 0.1, they would not have this attribute in common
   	double DEPENDENT_INTERVAL = 0.3;
 
-  	//A list that will house when this person last met all other people
-  	private ArrayList<Integer> lastMet
-  		= new ArrayList<Integer>(Collections.nCopies(Sim.instance( ).getNumPeople( ), -1));
+  	//A list that will house the absolute sim time that this person first met,
+  	//or last tickled, each other person
+  	private ArrayList<Double> lastTickleTime
+  		= new ArrayList<Double>(Collections.nCopies(Sim.instance( ).getNumPeople( ), -1.0));
 
-  	public void setMet(int index, int val){
-  		lastMet.set(index, val);
+  	public void refreshLastTickleTime(int index){
+        lastTickleTime.set(index,Sim.instance().schedule.getTime());
   	}
-  	public int getMet(int index){
-  		return lastMet.get(index);
-  	}
-  	public void resetLastMet(int index){
-  		lastMet.set(index, 0);
-  	}
-  	private void incMet( ){
-//  		System.out.println("Incrementing met " + ID);
-  		//for the entire last met array
-  		for(int i=0; i<lastMet.size( ); i++){
-  			//if the value is -1, the two have never met
-  			//so we only do something if it's different from -1
-  			int prev = lastMet.get(i);
-//  			System.out.println("Last met " + i + " " + prev + " steps ago");
-  			if(prev != -1){
- // 				System.out.println("incrementing");
-  				lastMet.set(i, prev+1);
-  			}
-  		}
+  	
+  	public void resetLastTickleTime(int index){
+        lastTickleTime.set(index,-1.0);
   	}
   	
   	private void decay( ){
-  		for(int i=0; i<lastMet.size( ); i++){
+  		for(int i=0; i<lastTickleTime.size( ); i++){
   			Edge toRemoveIn = null;
   			Edge toRemoveOut = null;
-  			int val = lastMet.get(i);
+  			double val = lastTickleTime.get(i);
   			//if the people last met longer than the threshold ago
-  			if(val > decayThreshold){
+  			if(Sim.instance().schedule.getTime() - val > decayThreshold){
   				//Get a bag of all the edges into this person
   				Bag bIn = Sim.instance( ).people.getEdgesIn(this);
   				//for each of these edges
@@ -127,14 +112,14 @@ public class Person implements Steppable{
   					if(otherID == i){
   						//when we find the person, make their edge the one we want to remove
   						toRemoveOut = edgeOut;
-  						otherPerson.setMet(ID, -1);
+  						otherPerson.resetLastTickleTime(ID);
   						j = bOut.size( );
   					}
   				}
   				Sim.instance( ).people.removeEdge(toRemoveIn);
   				Sim.instance( ).people.removeEdge(toRemoveOut);
   				//reset the value to -1, as though they've never met
-  				lastMet.set(i,-1);
+  				resetLastTickleTime(i);
   			}
   		}
   	}
@@ -218,8 +203,8 @@ System.out.println("friends " + friends);
 		//and reset when they met
 		if(friends){
 				Sim.instance( ).people.addEdge(this, personToMeet, 1);
-				resetLastMet(personToMeetID);
-				personToMeet.resetLastMet(ID);
+				refreshLastTickleTime(personToMeetID);
+				personToMeet.refreshLastTickleTime(ID);
 		}
 	}
 	
@@ -228,8 +213,8 @@ System.out.println("friends " + friends);
 		//reset when the two last encountered each other
 		int tickleID = person.getID( );
 		System.out.println("Person " + ID + " is tickling person " + tickleID);
-		resetLastMet(tickleID);
-		person.resetLastMet(ID);
+		refreshLastTickleTime(tickleID);
+		person.refreshLastTickleTime(ID);
 	}
 	
 	public void encounter(int number, Bag pool){
@@ -267,22 +252,13 @@ System.out.println("friends " + friends);
 //(unless we implement something where if two people meet enough times, they become friends by brute
 //force)
 		
-		//Now, we want to increment the steps since this person has met everyone they are friends with
-		incMet( );
-		//Note that this could cause problems if, for instance, person 1 steps before person 2
-		//and on person 2's turn they meet person 1
-		//so person 2 and person 1 met each other 0 steps ago
-		//but then person 2 finishes and person 2 met person 1 1 step ago
-		//while person 1 met person 2 0 steps ago
-		//I think this may be inconsequential really, and if person 2 surpasses the decay threshold
-		//we'll just remove the friendship anyway even though person 1 hasn't technically surpassed that
 		
 		//Now we want to see if any of the friendships have decayed
 		decay( );
 		
-//		System.out.println(ID + " last met:");
-//		for(int i=0; i<lastMet.size( ); i++){
-//			System.out.println(i + " " + lastMet.get(i));
+//		System.out.println(ID + " last tickled:");
+//		for(int i=0; i<lastTickleTime.size( ); i++){
+//			System.out.println(i + " " + lastTickleTime.get(i));
 //		}
 		
 		
@@ -309,7 +285,7 @@ System.out.println("friends " + friends);
     
     public boolean met(Person other){
     	int otherID = other.getID( );
-    	if(lastMet.get(otherID) == -1){
+    	if(lastTickleTime.get(otherID) == -1){
     		return false;
     	}else{
     		return true;
