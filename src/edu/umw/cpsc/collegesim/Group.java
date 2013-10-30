@@ -124,7 +124,7 @@ public class Group implements Steppable{
     }
 
    	void influenceMembers(){
-//   		System.out.println("**Influence members**");
+   		System.out.println("**Influence members**");
     	ArrayList<Double> independentAverage = new ArrayList<Double>();
     	ArrayList<Double> dependentAverage = new ArrayList<Double>();
       	double tempTotal;
@@ -141,7 +141,7 @@ public class Group implements Steppable{
           		tempTotal+=students.get(y).getDependentAttributes().get(x);
         	}
         	dependentAverage.add(tempTotal/students.size());
-      	}
+      	}i
 
       	//At this point, both independentAverage and dependentAverage are filled
       	//the following should use two rands-- one to see if the attribute should in fact change, and another to be used to multiply by the distance to calculate how much it would increment by
@@ -155,7 +155,7 @@ public class Group implements Steppable{
           		distanceI = independentAverage.get(y) - students.get(x).getIndependentAttributes().get(y);
           		distanceD = dependentAverage.get(y) - students.get(x).getDependentAttributes().get(y);
           		if(rand.nextDouble(true,true)<LIKELYHOOD_OF_RANDOMLY_CHANGING_ATTRIBUTE && distanceI>0){  //rand subject to change 
-            		increment = (rand.nextDouble(true,true)/5)*distanceI; //random number inclusively from 0-1, then divide by 5, then multiply by the distance that attribute is from the group's average
+            		increment = (rand.nextDouble(true,true)/52)*distanceI; //random number inclusively from 0-1, then divide by 5, then multiply by the distance that attribute is from the group's average
             		students.get(x).setIndAttrValue(y, (students.get(x).getIndependentAttributes().get(y))+increment);
 //            		System.out.println("Person " + students.get(x).getID() + "has changed an independent attribute");
           		}  
@@ -180,7 +180,7 @@ public class Group implements Steppable{
     public void step(SimState state){
     	ArrayList<Person> allPeople = Sim.getPeople();
     	influenceMembers();
-    	for(int x = 0; x<allPeople.size(); x++){
+    	for(int x = 0; x<allPeople.size(); x++){ 		//do we want to narrow down the list of people who could possibly join?
     		recruitStudent(allPeople.get(x));
     	}
     	for(int x = 0; x<students.size(); x++){
@@ -222,7 +222,7 @@ public class Group implements Steppable{
 	}
 	
 	public int getCloseness(){
-		return (tightness+frequency+recruitmentFactor)/3;
+		return (tightness+frequency+recruitmentFactor)/3; //maybe this could be used for leaving the group
 	}
 
 	public String toString(){
