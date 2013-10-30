@@ -2,6 +2,11 @@ package edu.umw.cpsc.collegesim;
 import sim.engine.*;
 import sim.util.*;
 import sim.field.network.*;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 
 
@@ -27,7 +32,11 @@ public class Sim extends SimState{
     public static int NUM_MONTHS_IN_SUMMER = 3;
     public static int NUM_MONTHS_IN_YEAR = NUM_MONTHS_IN_ACADEMIC_YEAR +
         NUM_MONTHS_IN_SUMMER;
+    public static final int MAX_ITER = 1000;
 
+    public static File outF;
+	public static BufferedWriter outWriter;
+    
     // Here is the schedule!
     // Persons run at clock time 0.5, 1.5, 2.5, ..., 8.5.
     // Groups run at clock time 1, 2, 3, ..., 9.
@@ -84,7 +93,10 @@ public class Sim extends SimState{
 
 	}
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
+		outF = new File("output.txt");
+		outF.createNewFile( );
+		outWriter = new BufferedWriter(new FileWriter(outF));
         doLoop(new MakesSimState() {
             public SimState newInstance(long seed, String[] args) {
                 Sim.SEED = seed;
@@ -94,6 +106,7 @@ public class Sim extends SimState{
                 return Sim.class;
             }
         }, args);
+        outWriter.close( );
 	}
 
 	public void finish(){

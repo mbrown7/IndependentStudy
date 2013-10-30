@@ -1,9 +1,10 @@
-
 package edu.umw.cpsc.collegesim;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import ec.util.*;
 import sim.engine.*;
+import sim.util.Bag;
 
 /*TODO: clean up size stuff, maybe get rid of the variable all together and just keep the setter and use students.size() in the class. 
 * Should I change students to people? That way it would be consistant throughout the program
@@ -14,99 +15,100 @@ import sim.engine.*;
 
 
 public class Group implements Steppable{
-	//all hard coded rands are subject to change
-	private final int MINIMUM_START_GROUP_SIZE = 3;
-	private final int MAXIMUM_START_GROUP_SIZE = 8; 
-	private final int RECRUITMENT_REQUIRED = 8;			//lower this to accept more students in group per step
-	private final double LIKELYHOOD_OF_RANDOMLY_LEAVING_GROUP = .1;		//increase this to remove more students in group per step
-	private final double LIKELYHOOD_OF_RANDOMLY_CHANGING_ATTRIBUTE = .1;
-	private int id;
-	private int size = 0;//based on how many people join-- affects it for now by decreasing the recruitment factor when increased-- gotta think of a way to scale it though to effect the closeness appropriately 
-	private int tightness=0;//based on individual students' willingness to make friends in the group
-	private int frequency;//random 1-10
-	private int recruitmentFactor;//random 1-10
-	static MersenneTwisterFast rand;
+  //all hard coded rands are subject to change
+  private final int MINIMUM_START_GROUP_SIZE = 3;
+  private final int MAXIMUM_START_GROUP_SIZE = 8; 
+  private final int RECRUITMENT_REQUIRED = 8;     //lower this to accept more students in group per step
+  private final double LIKELYHOOD_OF_RANDOMLY_LEAVING_GROUP = .1;   //increase this to remove more students in group per step
+  private final double LIKELYHOOD_OF_RANDOMLY_CHANGING_ATTRIBUTE = .1;
+  private int id;
+  private int size = 0;//based on how many people join-- affects it for now by decreasing the recruitment factor when increased-- gotta think of a way to scale it though to effect the closeness appropriately 
+  private int tightness=0;//based on individual students' willingness to make friends in the group
+  private int frequency;//random 1-10
+  private int recruitmentFactor;//random 1-10
+  static MersenneTwisterFast rand;
+  int numTimes = 0;
 
-	private ArrayList<Person> students;
-	
-	public Group(int x){
-		id = x;
-		rand = Sim.instance( ).random;
-		frequency=rand.nextInt(10)+1; 
-		recruitmentFactor=rand.nextInt(10)+1; 
-		students = new ArrayList<Person>();
-	}
+  private ArrayList<Person> students;
+  
+  public Group(int x){
+    id = x;
+    rand = Sim.instance( ).random;
+    frequency=rand.nextInt(10)+1; 
+    recruitmentFactor=rand.nextInt(10)+1; 
+    students = new ArrayList<Person>();
+  }
 
-	void selectStartingStudents(ArrayList<Person> people){
-		int initialGroupSize = rand.nextInt(MAXIMUM_START_GROUP_SIZE-MINIMUM_START_GROUP_SIZE)+MINIMUM_START_GROUP_SIZE+1;
-		Person randStudent;
-		if(initialGroupSize>Sim.getNumPeople()){
-			initialGroupSize=Sim.getNumPeople(); 		//to insure the initial group size is never greater than the number of total people
-		}
-		for(int x = 0; x < initialGroupSize; x++){
-			randStudent = people.get(rand.nextInt(people.size()));
-			while(doesGroupContainStudent(randStudent)){
-				randStudent = people.get(rand.nextInt(people.size()));
-			}
-			students.add(randStudent);
-			randStudent.joinGroup(this);
-		}
-		size = students.size();
-	}
-
-	void recruitStudent(Person s){
-		if(!doesGroupContainStudent(s)){
-			/*System.out.println("A: " + affinityTo(s));
-			System.out.println("RF: " +recruitmentFactor);
-			System.out.println("Willing: " + s.getWillingnessToMakeFriends());
-			System.out.println("Rand: " + rand.nextInt(10));
-			*/
-     		double r = (affinityTo(s) + recruitmentFactor + s.getWillingnessToMakeFriends()*2 + (rand.nextInt(10)+1)*2)/6.0; //want to mess with balence here
-     		System.out.println("\nFinal Recruitment: " + r);
-     		System.out.println("Person " + s.getID() + " looks at group " + id);
-     		if(r>RECRUITMENT_REQUIRED){
-     	  		students.add(s);
-     	 		s.joinGroup(this);
-     	 		System.out.println("Person " + s.getID() + " joined group " + id);
-     		}
-     		size = students.size();
-     		int t=0;
-     		for(int x = 0; x<size; x++){
-     			t += students.get(x).getWillingnessToMakeFriends();
-     		}
-     		if(size>0){
-    			tightness = t/size;
- 	 		}
-   		}
+  void selectStartingStudents(ArrayList<Person> people){
+    int initialGroupSize = rand.nextInt(MAXIMUM_START_GROUP_SIZE-MINIMUM_START_GROUP_SIZE)+MINIMUM_START_GROUP_SIZE+1;
+    Person randStudent;
+    if(initialGroupSize>Sim.getNumPeople()){
+      initialGroupSize=Sim.getNumPeople();    //to insure the initial group size is never greater than the number of total people
     }
-	
-	private boolean doesGroupContainStudent(Person p){
-		for (int x = 0; x<students.size(); x++){
-			if (p.getID()==students.get(x).getID()){
-				return true;
-			}
-		}
-		return false;
-	}
-	
-	boolean equals(Group a){
-		return (id==a.getID());
-	}
+    for(int x = 0; x < initialGroupSize; x++){
+      randStudent = people.get(rand.nextInt(people.size()));
+      while(doesGroupContainStudent(randStudent)){
+        randStudent = people.get(rand.nextInt(people.size()));
+      }
+      students.add(randStudent);
+      randStudent.joinGroup(this);
+    }
+    size = students.size();
+  }
 
-	 /*
+  void recruitStudent(Person s){
+    if(!doesGroupContainStudent(s)){
+      /*System.out.println("A: " + affinityTo(s));
+      System.out.println("RF: " +recruitmentFactor);
+      System.out.println("Willing: " + s.getWillingnessToMakeFriends());
+      System.out.println("Rand: " + rand.nextInt(10));
+      */
+        double r = (affinityTo(s) + recruitmentFactor + s.getWillingnessToMakeFriends()*2 + (rand.nextInt(10)+1)*2)/6.0; //want to mess with balence here
+     //   System.out.println("\nFinal Recruitment: " + r);
+    //    System.out.println("Person " + s.getID() + " looks at group " + id);
+        if(r>RECRUITMENT_REQUIRED){
+            students.add(s);
+          s.joinGroup(this);
+     //     System.out.println("Person " + s.getID() + " joined group " + id);
+        }
+        size = students.size();
+        int t=0;
+        for(int x = 0; x<size; x++){
+          t += students.get(x).getWillingnessToMakeFriends();
+        }
+        if(size>0){
+          tightness = t/size;
+      }
+      }
+    }
+  
+  private boolean doesGroupContainStudent(Person p){
+    for (int x = 0; x<students.size(); x++){
+      if (p.getID()==students.get(x).getID()){
+        return true;
+      }
+    }
+    return false;
+  }
+  
+  boolean equals(Group a){
+    return (id==a.getID());
+  }
+
+   /*
      * Return a number from 0 to 1 indicating the degree of affinity the
      *   Person passed has to the existing members of this group.
      */
-	double affinityTo(Person p) {
-    	if(size>0){
-    		double temp=0;
-    		for(int x = 0; x<students.size(); x++){
-    			temp = p.similarityTo(students.get(x));
-    		}
-    		return (temp/students.size()*10);
-    	}else{
-    		return 5;
-    	}
+  double affinityTo(Person p) {
+      if(size>0){
+        double temp=0;
+        for(int x = 0; x<students.size(); x++){
+          temp = p.similarityTo(students.get(x));
+        }
+        return (temp/students.size()*10);
+      }else{
+        return 5;
+      }
 
         // write this maddie
         // ideas:
@@ -158,7 +160,7 @@ public class Group implements Steppable{
           		if(rand.nextDouble(true,true)<LIKELYHOOD_OF_RANDOMLY_CHANGING_ATTRIBUTE && distanceI>0){  //rand subject to change 
             		increment = (rand.nextDouble(true,true)/52)*distanceI; //random number inclusively from 0-1, then divide by 5, then multiply by the distance that attribute is from the group's average
             		students.get(x).setIndAttrValue(y, (students.get(x).getIndependentAttributes().get(y))+increment);
-            		System.out.println("Person " + students.get(x).getID() + "has changed an independent attribute");
+            		System.out.println("Person " + students.get(x).getID() + " has changed an independent attribute");
           		}  
 
           		if(rand.nextDouble(true,true)<LIKELYHOOD_OF_RANDOMLY_CHANGING_ATTRIBUTE && distanceD>0){  
@@ -171,101 +173,107 @@ public class Group implements Steppable{
       }
     }
 
-    public void possiblyLeaveGroup(Person p){
-    	if(rand.nextDouble(true,true)<LIKELYHOOD_OF_RANDOMLY_LEAVING_GROUP){
-    		p.leaveGroup(this);
-    		removeStudent(p);
-    		System.out.println("Removing Student "+p.getID()+" from group " + id);
-    	}
+     public void possiblyLeaveGroup(Person p){
+      if(rand.nextDouble(true,true)<LIKELYHOOD_OF_RANDOMLY_LEAVING_GROUP){
+        p.leaveGroup(this);
+        removeStudent(p);
+    //    System.out.println("Removing Student "+p.getID()+" from group " + id);
+      }
     }
       
     public void step(SimState state){
-    	ArrayList<Person> allPeople = Sim.getPeople();
-    	influenceMembers();
-    	for(int x = 0; x<allPeople.size(); x++){ 		//do we want to narrow down the list of people who could possibly join?
-    		recruitStudent(allPeople.get(x));
-    	}
-    	for(int x = 0; x<students.size(); x++){
-    		possiblyLeaveGroup(students.get(x));
-    	}
+      ArrayList<Person> allPeople = Sim.getPeople();
+      influenceMembers();
+      for(int x = 0; x<allPeople.size(); x++){    //do we want to narrow down the list of people who could possibly join?
+        recruitStudent(allPeople.get(x));
+      }
+      for(int x = 0; x<students.size(); x++){
+        possiblyLeaveGroup(students.get(x));
+      }
+      
+      //If we've done the maximum number of iterations, then stop; otherwise, keep stepping
+      if(numTimes >= Sim.MAX_ITER){
+        System.out.println(this);
+      }else{
         if (Sim.instance().nextMonthInAcademicYear()) {
-            // It's not the end of the academic year yet. Run again
-            // next month.
-            Sim.instance( ).schedule.scheduleOnceIn(1, this);
+          // It's not the end of the academic year yet. Run again
+          // next month.
+          Sim.instance( ).schedule.scheduleOnceIn(1, this);
         } else {
-            // It's summer break! Sleep for the summer.
-            Sim.instance( ).schedule.scheduleOnceIn(
-                Sim.NUM_MONTHS_IN_SUMMER, this);
+          // It's summer break! Sleep for the summer.
+          Sim.instance( ).schedule.scheduleOnceIn(
+              Sim.NUM_MONTHS_IN_SUMMER, this);
         }
- 	}
+      }
+      numTimes++;
+  }
 
-	
-	public void setSize(int s){
-		size=s;
-	}
-	
-	public void setTightness(int t){
-		tightness=t;
-	}
-	
-	public void setFrequency(int f){
-		frequency=f;
-	}
-	
-	public void setRecruitmentFactor(int r){
-		recruitmentFactor=r;
-	}
-	
-	public int getSize(){
-		return students.size();
-	}
-	
-	public int getTightness(){
-		return tightness;
-	}
-	
-	public int getFrequency(){
-		return frequency;
-	}
-	
-	public double getRecruitmentFactor(){
-		return recruitmentFactor;
-	}
-	
-	public int getCloseness(){
-		return (tightness+frequency+recruitmentFactor)/3; //maybe this could be used for leaving the group
-	}
+  
+  public void setSize(int s){
+    size=s;
+  }
+  
+  public void setTightness(int t){
+    tightness=t;
+  }
+  
+  public void setFrequency(int f){
+    frequency=f;
+  }
+  
+  public void setRecruitmentFactor(int r){
+    recruitmentFactor=r;
+  }
+  
+  public int getSize(){
+    return students.size();
+  }
+  
+  public int getTightness(){
+    return tightness;
+  }
+  
+  public int getFrequency(){
+    return frequency;
+  }
+  
+  public double getRecruitmentFactor(){
+    return recruitmentFactor;
+  }
+  
+  public int getCloseness(){
+    return (tightness+frequency+recruitmentFactor)/3; //maybe this could be used for leaving the group
+  }
 
-	public String toString(){
-		return "Closeness: "+ getCloseness() + " (Size: " + size + " Tightness: " + tightness + " Frequency: " + frequency + " Recruitment Factor: "+ recruitmentFactor + ")";
-	}
+  public String toString(){
+    return "Closeness: "+ getCloseness() + " (Size: " + size + " Tightness: " + tightness + " Frequency: " + frequency + " Recruitment Factor: "+ recruitmentFactor + ")";
+  }
 
-	public void listMembers(){
-		System.out.println("The following students are in group " + id + ":");
-		for(int x = 0; x < students.size(); x++){
-			System.out.println("\t" + students.get(x));
-		}
-	}
-	
-	public int getID(){
-		return id;
-	}
-	
-	public void setID(int i){
-		id=i;
-	}
+  public void listMembers(){
+    System.out.println("The following students are in group " + id + ":");
+    for(int x = 0; x < students.size(); x++){
+      System.out.println("\t" + students.get(x));
+    }
+  }
+  
+  public int getID(){
+    return id;
+  }
+  
+  public void setID(int i){
+    id=i;
+  }
 
-	public Person getPersonAtIndex(int x){
-		return students.get(x);
-	}
+  public Person getPersonAtIndex(int x){
+    return students.get(x);
+  }
 
-	public void removeStudent(Person p){
-    	for(int x = 0; x<students.size(); x++){
-      		if(students.get(x).equals(p)){
-        		students.remove(x);
-      		}
-    	}
-  	}
+  public void removeStudent(Person p){
+      for(int x = 0; x<students.size(); x++){
+          if(students.get(x).equals(p)){
+            students.remove(x);
+          }
+      }
+    }
 
 }
-
