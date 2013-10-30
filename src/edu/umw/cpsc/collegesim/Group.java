@@ -124,6 +124,7 @@ public class Group implements Steppable{
     }
 
    	void influenceMembers(){
+      if(students.size()>0){
    		System.out.println("**Influence members**");
     	ArrayList<Double> independentAverage = new ArrayList<Double>();
     	ArrayList<Double> dependentAverage = new ArrayList<Double>();
@@ -167,6 +168,7 @@ public class Group implements Steppable{
           		}
         	}
       	}
+      }
     }
 
     public void possiblyLeaveGroup(Person p){
