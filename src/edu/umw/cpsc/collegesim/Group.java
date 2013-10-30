@@ -141,7 +141,7 @@ public class Group implements Steppable{
           		tempTotal+=students.get(y).getDependentAttributes().get(x);
         	}
         	dependentAverage.add(tempTotal/students.size());
-      	}i
+      	}
 
       	//At this point, both independentAverage and dependentAverage are filled
       	//the following should use two rands-- one to see if the attribute should in fact change, and another to be used to multiply by the distance to calculate how much it would increment by

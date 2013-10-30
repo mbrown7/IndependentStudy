@@ -71,14 +71,14 @@ public class Sim extends SimState{
 			peopleList.add(person);
 			people.addNode(person);
 			lastMet.addNode(person);
-			schedule.scheduleOnceIn(0.5,person);
+			schedule.scheduleOnceIn(1.5,person);
 		}
 
 		for(int x = 0; x<NUM_GROUPS; x++){
 			Group group = new Group(x);
 			group.selectStartingStudents(peopleList);
 			group.listMembers();
-			schedule.scheduleOnceIn(1.0,group);
+			schedule.scheduleOnceIn(2.0,group);
 			groups.add(group);
 		}
 
