@@ -157,13 +157,13 @@ public class Group implements Steppable{
           		if(rand.nextDouble(true,true)<LIKELYHOOD_OF_RANDOMLY_CHANGING_ATTRIBUTE && distanceI>0){  //rand subject to change 
             		increment = (rand.nextDouble(true,true)/52)*distanceI; //random number inclusively from 0-1, then divide by 5, then multiply by the distance that attribute is from the group's average
             		students.get(x).setIndAttrValue(y, (students.get(x).getIndependentAttributes().get(y))+increment);
-//            		System.out.println("Person " + students.get(x).getID() + "has changed an independent attribute");
+            		System.out.println("Person " + students.get(x).getID() + "has changed an independent attribute");
           		}  
 
           		if(rand.nextDouble(true,true)<LIKELYHOOD_OF_RANDOMLY_CHANGING_ATTRIBUTE && distanceD>0){  
             		increment = (rand.nextDouble(true, true)/5)*distanceD;
             		students.get(x).setDepAttrValue(y, (students.get(x).getDependentAttributes().get(y))+increment);  //Morgan's method
-//          			System.out.println("Person " + students.get(x).getID() + " has changed a dependent attribute");
+          			System.out.println("Person " + students.get(x).getID() + " has changed a dependent attribute");
           		}
         	}
       	}
@@ -186,6 +186,15 @@ public class Group implements Steppable{
     	for(int x = 0; x<students.size(); x++){
     		possiblyLeaveGroup(students.get(x));
     	}
+        if (Sim.instance().nextMonthInAcademicYear()) {
+            // It's not the end of the academic year yet. Run again
+            // next month.
+            Sim.instance( ).schedule.scheduleOnceIn(1, this);
+        } else {
+            // It's summer break! Sleep for the summer.
+            Sim.instance( ).schedule.scheduleOnceIn(
+                Sim.NUM_MONTHS_IN_SUMMER, this);
+        }
  	}
 
 	
