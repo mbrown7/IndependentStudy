@@ -23,6 +23,21 @@ public class Sim extends SimState{
 	private static ArrayList<Person> peopleList = new ArrayList<Person>();
     private static long SEED = 0;
     private static Sim theInstance;
+    public static int NUM_MONTHS_IN_ACADEMIC_YEAR = 9;
+    public static int NUM_MONTHS_IN_SUMMER = 3;
+    public static int NUM_MONTHS_IN_YEAR = NUM_MONTHS_IN_ACADEMIC_YEAR +
+        NUM_MONTHS_IN_SUMMER;
+
+    // Here is the schedule!
+    // Persons run at clock time 0.5, 1.5, 2.5, ..., 8.5.
+    // Groups run at clock time 1, 2, 3, ..., 9.
+    boolean nextMonthInAcademicYear() {
+        double curTime = Sim.instance().schedule.getTime();
+        int curTimeInt = (int) Math.ceil(curTime);
+        // if curTimeInt is 1, that means we are at the first month.
+        int monthsWithinYear = curTimeInt % NUM_MONTHS_IN_YEAR;
+        return (monthsWithinYear < NUM_MONTHS_IN_ACADEMIC_YEAR);
+    }
 
     public static int getNumPeople( ){
     	return NUM_PEOPLE;
@@ -56,14 +71,14 @@ public class Sim extends SimState{
 			peopleList.add(person);
 			people.addNode(person);
 			lastMet.addNode(person);
-			schedule.scheduleOnce(person);
+			schedule.scheduleOnceIn(0.5,person);
 		}
 
 		for(int x = 0; x<NUM_GROUPS; x++){
 			Group group = new Group(x);
 			group.selectStartingStudents(peopleList);
 			group.listMembers();
-			schedule.scheduleOnce(group);
+			schedule.scheduleOnceIn(1.0,group);
 			groups.add(group);
 		}
 
