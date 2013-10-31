@@ -263,21 +263,6 @@ System.out.println("friends " + friends);
     
     //If we've done the maximum number of iterations, then stop; otherwise, keep stepping
     if(numTimes >= Sim.MAX_ITER){
-      String message = Integer.toString(ID) + " ";
-          Bag b = Sim.instance( ).people.getEdgesIn(this);
-          int numFriends = 0;
-          for (int i=0; i<b.size(); i++) {
-              numFriends++;
-          }
-          message = message + Integer.toString(numFriends) + " "
-              + Integer.toString(groups.size( )) + " " + race + " " + gender + " "
-              + willingnessToMakeFriends + "\n";
-          //Edit this try?
-          try {
-        Sim.outWriter.write(message);
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
       System.out.println(this);
     }else{
             if (Sim.instance().nextMonthInAcademicYear()) {
@@ -331,6 +316,14 @@ System.out.println("friends " + friends);
     public int getID( ){
       return ID;
     }
+  
+  public Race getRace( ){
+	  return race;
+  }
+  
+  public Gender getGender( ){
+	  return gender;
+  }
  
   int getWillingnessToMakeFriends( ){
     return willingnessToMakeFriends;
