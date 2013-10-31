@@ -18,9 +18,11 @@ public class Group implements Steppable{
   //all hard coded rands are subject to change
   private final int MINIMUM_START_GROUP_SIZE = 3;
   private final int MAXIMUM_START_GROUP_SIZE = 8; 
-  private final int RECRUITMENT_REQUIRED = 8;     //lower this to accept more students in group per step
-  private final double LIKELYHOOD_OF_RANDOMLY_LEAVING_GROUP = .1;   //increase this to remove more students in group per step
+  private final int RECRUITMENT_REQUIRED = 7;     //lower this to accept more students in group per step
+  private final double LIKELYHOOD_OF_RANDOMLY_LEAVING_GROUP = .05;   //increase this to remove more students in group per step
   private final double LIKELYHOOD_OF_RANDOMLY_CHANGING_ATTRIBUTE = .1;
+  private final int MINIMUM_GROUP_SIZE = 3;
+  private final int NUM_PEOPLE_TO_RECRUIT = 10;
   private int id;
   private int size = 0;//based on how many people join-- affects it for now by decreasing the recruitment factor when increased-- gotta think of a way to scale it though to effect the closeness appropriately 
   private int tightness=0;//based on individual students' willingness to make friends in the group
@@ -39,9 +41,12 @@ public class Group implements Steppable{
     students = new ArrayList<Person>();
   }
 
-  void selectStartingStudents(ArrayList<Person> people){
+  public void selectStartingStudents(ArrayList<Person> people){
     int initialGroupSize = rand.nextInt(MAXIMUM_START_GROUP_SIZE-MINIMUM_START_GROUP_SIZE)+MINIMUM_START_GROUP_SIZE+1;
     Person randStudent;
+    if(initialGroupSize>MINIMUM_GROUP_SIZE){
+      initialGroupSize=MINIMUM_GROUP_SIZE;    //keeps groups at least the min
+    }
     if(initialGroupSize>Sim.getNumPeople()){
       initialGroupSize=Sim.getNumPeople();    //to insure the initial group size is never greater than the number of total people
     }
@@ -56,7 +61,24 @@ public class Group implements Steppable{
     size = students.size();
   }
 
-  void recruitStudent(Person s){
+  public ArrayList<Person> findStudentsToRecruit(ArrayList<Person> people){
+    int numPeople = NUM_PEOPLE_TO_RECRUIT;
+    ArrayList<Person> recruits = new ArrayList<Person>();
+    Person randStudent;
+    if(numPeople>Sim.getNumPeople()){
+      numPeople=Sim.getNumPeople();    //to insure the initial group size is never greater than the number of total people
+    }
+    for(int x = 0; x < numPeople; x++){
+      randStudent = people.get(rand.nextInt(people.size()));
+      while(doesGroupContainStudent(randStudent)){
+        randStudent = people.get(rand.nextInt(people.size()));
+      }
+      recruits.add(randStudent);
+    }
+    return recruits;
+  }
+
+  public void recruitStudent(Person s){
     if(!doesGroupContainStudent(s)){
       /*System.out.println("A: " + affinityTo(s));
       System.out.println("RF: " +recruitmentFactor);
@@ -82,7 +104,7 @@ public class Group implements Steppable{
       }
     }
   
-  private boolean doesGroupContainStudent(Person p){
+  public boolean doesGroupContainStudent(Person p){
     for (int x = 0; x<students.size(); x++){
       if (p.getID()==students.get(x).getID()){
         return true;
@@ -91,7 +113,7 @@ public class Group implements Steppable{
     return false;
   }
   
-  boolean equals(Group a){
+  public boolean equals(Group a){
     return (id==a.getID());
   }
 
@@ -99,7 +121,7 @@ public class Group implements Steppable{
      * Return a number from 0 to 1 indicating the degree of affinity the
      *   Person passed has to the existing members of this group.
      */
-  double affinityTo(Person p) {
+  public double affinityTo(Person p) {
       if(size>0){
         double temp=0;
         for(int x = 0; x<students.size(); x++){
@@ -125,7 +147,7 @@ public class Group implements Steppable{
         // .5?
     }
 
-   	void influenceMembers(){
+   	public void influenceMembers(){
       if(students.size()>0){
    		System.out.println("**Influence members**");
     	ArrayList<Double> independentAverage = new ArrayList<Double>();
@@ -174,7 +196,7 @@ public class Group implements Steppable{
     }
 
      public void possiblyLeaveGroup(Person p){
-      if(rand.nextDouble(true,true)<LIKELYHOOD_OF_RANDOMLY_LEAVING_GROUP){
+      if(rand.nextDouble(true,true)<LIKELYHOOD_OF_RANDOMLY_LEAVING_GROUP&&students.size()>MINIMUM_GROUP_SIZE){
         p.leaveGroup(this);
         removeStudent(p);
     //    System.out.println("Removing Student "+p.getID()+" from group " + id);
@@ -182,10 +204,10 @@ public class Group implements Steppable{
     }
       
     public void step(SimState state){
-      ArrayList<Person> allPeople = Sim.getPeople();
       influenceMembers();
-      for(int x = 0; x<allPeople.size(); x++){    //do we want to narrow down the list of people who could possibly join?
-        recruitStudent(allPeople.get(x));
+      ArrayList<Person> recruits = findStudentsToRecruit(Sim.getPeople());
+      for(int x = 0; x < recruits.size(); x++){
+        recruitStudent(recruits.get(x));
       }
       for(int x = 0; x<students.size(); x++){
         possiblyLeaveGroup(students.get(x));
