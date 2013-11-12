@@ -15,7 +15,7 @@ import java.util.ArrayList;
  * sub-simulation.)
  * @author MB
  */
-public class Sim extends SimState{
+public class Sim extends SimState implements Steppable{
 
 //	public Continuous2D room = new Continuous2D(1.0,100,100);
 
@@ -33,9 +33,11 @@ public class Sim extends SimState{
     public static int NUM_MONTHS_IN_YEAR = NUM_MONTHS_IN_ACADEMIC_YEAR +
         NUM_MONTHS_IN_SUMMER;
     public static final int MAX_ITER = 1000;
+    public static final int numYears =  6;
 
     public static File outF;
 	public static BufferedWriter outWriter;
+
     
     // Here is the schedule!
     // Persons run at clock time 0.5, 1.5, 2.5, ..., 8.5.
@@ -77,6 +79,7 @@ public class Sim extends SimState{
 		//schedule
 		for(int i=0; i<NUM_PEOPLE; i++){
 			Person person = new Person(i);
+			person.setYear(random.nextInt(4)+1);
 			peopleList.add(person);
 			people.addNode(person);
 			lastMet.addNode(person);
@@ -86,17 +89,19 @@ public class Sim extends SimState{
 		for(int x = 0; x<NUM_GROUPS; x++){
 			Group group = new Group(x);
 			group.selectStartingStudents(peopleList);
-			group.listMembers();
+			//group.listMembers();
 			schedule.scheduleOnceIn(2.0,group);
 			groups.add(group);
 		}
 
+		schedule.scheduleOnceIn(1, this);
+
 	}
 	
 	public static void main(String[] args) throws IOException {
-		outF = new File("output.txt");
+		/*outF = new File("output.txt");
 		outF.createNewFile( );
-		outWriter = new BufferedWriter(new FileWriter(outF));
+		outWriter = new BufferedWriter(new FileWriter(outF));*/
         doLoop(new MakesSimState() {
             public SimState newInstance(long seed, String[] args) {
                 Sim.SEED = seed;
@@ -106,18 +111,62 @@ public class Sim extends SimState{
                 return Sim.class;
             }
         }, args);
-        outWriter.close( );
+        //outWriter.close( );
 	}
 
 	public void finish(){
-		for(int x = 0; x<NUM_GROUPS; x++){
+		/*for(int x = 0; x<NUM_GROUPS; x++){
 			groups.get(x).listMembers();
-		}
-		System.out.println("Person 0 should meet:"); //just an example of how getPeopleInGroups() should work
+		}*/
+		//System.out.println("Person 0 should meet:"); //just an example of how getPeopleInGroups() should work
 		Bag peopleInGroups = peopleList.get(0).getPeopleInGroups();
-		for(int x = 0; x < peopleInGroups.size(); x++){
+		/*for(int x = 0; x < peopleInGroups.size(); x++){
 			System.out.println(peopleInGroups.get(x));
-		}
+		}*/
+
 	}
 
+	public void step(SimState state){
+		if((int) (schedule.getTime()/NUM_MONTHS_IN_YEAR)<=numYears){
+			System.out.println("Year: "+(int) schedule.getTime()/NUM_MONTHS_IN_YEAR);
+			if(nextMonthInAcademicYear()){
+				schedule.scheduleOnceIn(NUM_MONTHS_IN_ACADEMIC_YEAR, this);
+				if(outWriter!=null){
+					try{
+						outWriter.close();
+					}catch(IOException e){
+						System.out.println("Couldn't close file");
+					}
+				}
+				for(int x = 0; x<peopleList.size(); x++){
+					peopleList.get(x).incrementYear();
+				}
+				String f="year"+(int) (schedule.getTime()/NUM_MONTHS_IN_YEAR);
+				try{
+					outF = new File(f);
+					outF.createNewFile( );
+					outWriter = new BufferedWriter(new FileWriter(outF));
+				}catch(IOException e){
+					System.out.println("Couldn't create file");
+				}
+			}else{
+				System.out.println("End of year: "+(int) (schedule.getTime()/NUM_MONTHS_IN_YEAR));
+				schedule.scheduleOnceIn(NUM_MONTHS_IN_SUMMER, this);
+				ArrayList<Person> toRemove = new ArrayList<Person>();
+				for(int x = 0; x<peopleList.size(); x++){
+					if(peopleList.get(x).getYear()==4){
+						System.out.println("Person " + peopleList.get(x).getID() + " has graduated! Congrats!");
+						toRemove.add(peopleList.get(x));
+					}
+				}
+				for(int x = 0; x<toRemove.size(); x++){
+					toRemove.get(x).printToFile();
+					peopleList.remove(toRemove.get(x));
+				}
+			}
+		}else{
+			schedule.seal();
+		}
+
+	}
 }

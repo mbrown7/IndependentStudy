@@ -28,7 +28,7 @@ public class Group implements Steppable{
   private int tightness=0;//based on individual students' willingness to make friends in the group
   private int frequency;//random 1-10
   private int recruitmentFactor;//random 1-10
-  static MersenneTwisterFast rand;
+  private MersenneTwisterFast rand = Sim.instance( ).random;
   int numTimes = 0;
 
   private ArrayList<Person> students;
@@ -149,7 +149,7 @@ public class Group implements Steppable{
 
    	public void influenceMembers(){
       if(students.size()>0){
-   		System.out.println("**Influence members**");
+   		//System.out.println("**Influence members**"); ADD BACK IN
     	ArrayList<Double> independentAverage = new ArrayList<Double>();
     	ArrayList<Double> dependentAverage = new ArrayList<Double>();
       	double tempTotal;
@@ -182,13 +182,13 @@ public class Group implements Steppable{
           		if(rand.nextDouble(true,true)<LIKELYHOOD_OF_RANDOMLY_CHANGING_ATTRIBUTE && distanceI>0){  //rand subject to change 
             		increment = (rand.nextDouble(true,true)/52)*distanceI; //random number inclusively from 0-1, then divide by 5, then multiply by the distance that attribute is from the group's average
             		students.get(x).setIndAttrValue(y, (students.get(x).getIndependentAttributes().get(y))+increment);
-            		System.out.println("Person " + students.get(x).getID() + " has changed an independent attribute");
+            		//System.out.println("Person " + students.get(x).getID() + " has changed an independent attribute"); ADD BACK IN
           		}  
 
           		if(rand.nextDouble(true,true)<LIKELYHOOD_OF_RANDOMLY_CHANGING_ATTRIBUTE && distanceD>0){  
             		increment = (rand.nextDouble(true, true)/5)*distanceD;
             		students.get(x).setDepAttrValue(y, (students.get(x).getDependentAttributes().get(y))+increment);  //Morgan's method
-          			System.out.println("Person " + students.get(x).getID() + " has changed a dependent attribute");
+          			//System.out.println("Person " + students.get(x).getID() + " has changed a dependent attribute"); ADD BACK IN
           		}
         	}
       	}

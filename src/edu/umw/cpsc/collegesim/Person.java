@@ -29,6 +29,7 @@ public class Person implements Steppable{
   public static final int NUM_TO_MEET_POP = 1;
 
   private int ID;
+  private int year;
   private MersenneTwisterFast generator = Sim.instance( ).random;
   private int numTimes = 1;
   private int decayThreshold = 4;
@@ -192,12 +193,12 @@ public class Person implements Steppable{
     double similar;
     boolean friends = false;
     int personToMeetID = personToMeet.getID( );
-System.out.println("Person " + ID + " is meeting person " + personToMeetID);
+//System.out.println("Person " + ID + " is meeting person " + personToMeetID);            ADD BACK IN
     //Calculate their similarity rating, and then see if they should become friends
     similar = similarityTo(personToMeet);
 //System.out.println("similar " + similar);
     friends = areFriends(similar);
-System.out.println("friends " + friends);
+//System.out.println("friends " + friends);                           ADD BACK IN
     //if they become friends, add their edge to the network
     //and reset when they met
     if(friends){
@@ -211,7 +212,7 @@ System.out.println("friends " + friends);
   public void tickle(Person person){
     //reset when the two last encountered each other
     int tickleID = person.getID( );
-    System.out.println("Person " + ID + " is tickling person " + tickleID);
+    //System.out.println("Person " + ID + " is tickling person " + tickleID);         ADD BACK IN
     refreshLastTickleTime(tickleID);
     person.refreshLastTickleTime(ID);
   }
@@ -275,8 +276,10 @@ System.out.println("friends " + friends);
           //Edit this try?
           try {
         Sim.outWriter.write(message);
+        System.out.println("here");
       } catch (IOException e) {
         e.printStackTrace();
+        System.out.println("bad");
       }
       System.out.println(this);
     }else{
@@ -292,6 +295,27 @@ System.out.println("friends " + friends);
     }
     numTimes++;
   }
+
+public void printToFile(){
+        String message = Integer.toString(ID) + " ";
+          Bag b = Sim.instance( ).people.getEdgesIn(this);
+          int numFriends = 0;
+          for (int i=0; i<b.size(); i++) {
+              numFriends++;
+          }
+          message = message + Integer.toString(numFriends) + " "
+              + Integer.toString(groups.size( )) + " " + race + " " + gender + " "
+              + willingnessToMakeFriends + "\n";
+          //Edit this try?
+          try {
+        Sim.outWriter.write(message);
+        System.out.println("here");
+      } catch (IOException e) {
+        e.printStackTrace();
+        System.out.println("bad");
+      }
+      System.out.println(this);
+}
 
     public boolean friendsWith(Person other) {
       Bag b = Sim.instance( ).people.getEdgesIn(this);
@@ -347,10 +371,6 @@ System.out.println("friends " + friends);
       }
     }
     return false;
-  }
-
-  void printStatement( ){
-    System.out.println("Willingness: "+willingnessToMakeFriends+" Number of Groups: " + groups.size( ));
   }
     
   /**
@@ -536,6 +556,17 @@ System.out.println("friends " + friends);
     return(ID==p.getID());
   }
 
+  public void setYear(int x){
+    year = x;
+  }
+
+  public int getYear(){
+    return year;
+  }
+
+  public void incrementYear(){
+    year++;
+  }
 
 
 }
