@@ -18,8 +18,8 @@ public class Group implements Steppable{
   //all hard coded rands are subject to change
   private final int MINIMUM_START_GROUP_SIZE = 3;
   private final int MAXIMUM_START_GROUP_SIZE = 8; 
-  private final int RECRUITMENT_REQUIRED = 7;     //lower this to accept more students in group per step
-  private final double LIKELYHOOD_OF_RANDOMLY_LEAVING_GROUP = .05;   //increase this to remove more students in group per step
+  private final int RECRUITMENT_REQUIRED = 6;     //lower this to accept more students in group per step
+  private final double LIKELYHOOD_OF_RANDOMLY_LEAVING_GROUP = .1;   //increase this to remove more students in group per step
   private final double LIKELYHOOD_OF_RANDOMLY_CHANGING_ATTRIBUTE = .1;
   private final int MINIMUM_GROUP_SIZE = 3;
   private final int NUM_PEOPLE_TO_RECRUIT = 10;

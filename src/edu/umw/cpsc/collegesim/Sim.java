@@ -111,7 +111,32 @@ public class Sim extends SimState implements Steppable{
                 return Sim.class;
             }
         }, args);
+       /*
+<<<<<<< HEAD
         //outWriter.close( );
+=======
+        Bag p = people.getAllNodes( );
+        for(int j=0; j<p.size( ); j++){
+        	Person person = (Person)p.get(j);
+        	String message = Integer.toString(person.getID( )) + " ";
+        	Bag b = Sim.instance( ).people.getEdgesIn(person);
+        	int numFriends = 0;
+        	for (int i=0; i<b.size(); i++) {
+        		numFriends++;
+        	}
+        	message = message + Integer.toString(numFriends) + " "
+        		+ Integer.toString(groups.size( )) + " " + person.getRace( ) + " " + person.getGender( )
+        		+ " " + person.getWillingnessToMakeFriends( ) + "\n";
+        	//Edit this try?
+        	try {
+        		Sim.outWriter.write(message);
+        	} catch (IOException e) {
+        		e.printStackTrace();
+        	}
+        }
+        outWriter.close( );
+>>>>>>> 4554d6937f367188ee37f28038cf7633f88696b3
+*/
 	}
 
 	public void finish(){

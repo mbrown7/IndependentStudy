@@ -264,6 +264,8 @@ public class Person implements Steppable{
     
     //If we've done the maximum number of iterations, then stop; otherwise, keep stepping
     if(numTimes >= Sim.MAX_ITER){
+      /*
+<<<<<<< HEAD
       String message = Integer.toString(ID) + " ";
           Bag b = Sim.instance( ).people.getEdgesIn(this);
           int numFriends = 0;
@@ -281,7 +283,10 @@ public class Person implements Steppable{
         e.printStackTrace();
         System.out.println("bad");
       }
+=======
+>>>>>>> 4554d6937f367188ee37f28038cf7633f88696b3
       System.out.println(this);
+      */
     }else{
             if (Sim.instance().nextMonthInAcademicYear()) {
                 // It's not the end of the academic year yet. Run again
@@ -355,6 +360,14 @@ public void printToFile(){
     public int getID( ){
       return ID;
     }
+  
+  public Race getRace( ){
+	  return race;
+  }
+  
+  public Gender getGender( ){
+	  return gender;
+  }
  
   int getWillingnessToMakeFriends( ){
     return willingnessToMakeFriends;
