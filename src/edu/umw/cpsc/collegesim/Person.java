@@ -71,6 +71,20 @@ public class Person implements Steppable{
     private ArrayList<Double> lastTickleTime
       = new ArrayList<Double>(Collections.nCopies(Sim.instance( ).getNumPeople( ), -1.0));
 
+    
+    public void leaveUniversity( ){
+    	//This removes all the friendships this person holds and makes them leave all groups
+    	//to be called when the person graduates or drops out
+    	for(int i=0; i<groups.size( ); i++){
+    		Group group = groups.get(i);
+    		group.removeStudent(this);
+    	}
+    	//This SHOULD work to remove this person from the network graph AS WELL AS all edges
+    	//into it and out of it, aka, all friendships
+    	Sim.instance( ).people.removeNode(this);
+    }
+    
+    
     public void refreshLastTickleTime(int index){
         lastTickleTime.set(index,Sim.instance().schedule.getTime());
     }
@@ -557,6 +571,10 @@ public void printToFile(){
     return groupmates;
   }
 
+  //What is this? They're leaving a certain group, it seems, but it doesn't look like they're
+  //removing themselves as far as the group is concerned - make sense?
+  //Like, we're removing group g from this person's list of groups
+  //but not removing this person from group g's list of members
   public void leaveGroup(Group g){
     for(int x = 0; x<groups.size(); x++){
       if(groups.get(x).equals(g)){
