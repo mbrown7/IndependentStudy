@@ -2,6 +2,8 @@ package edu.umw.cpsc.collegesim;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Hashtable;
+import java.util.Enumeration;
 
 import sim.engine.*;
 import sim.util.*;
@@ -68,11 +70,12 @@ public class Person implements Steppable{
 
     //A list that will house the absolute sim time that this person first met,
     //or last tickled, each other person
-    private ArrayList<Double> lastTickleTime
-      = new ArrayList<Double>(Collections.nCopies(Sim.instance().getNumPeople( ), -1.0));
+    private Hashtable<Integer,Double> lastTickleTime
+      = new Hashtable<Integer,Double>();
 
     
     public void leaveUniversity( ){
+System.out.println("Student " + ID + " is leaving...");
     	//This removes all the friendships this person holds and makes them leave all groups
     	//to be called when the person graduates or drops out
     	for(int i=0; i<groups.size( ); i++){
@@ -85,57 +88,67 @@ public class Person implements Steppable{
     }
     
     
+    /**
+     * I have now tickled the person whose ID (index) is passed. So set the
+     * last tickle time for this person to the current time.
+     */
     public void refreshLastTickleTime(int index){
-        lastTickleTime.set(index,Sim.instance().schedule.getTime());
+        lastTickleTime.put(index,Sim.instance().schedule.getTime());
     }
     
+    /**
+     * Blah, I'm no longer friends with this person. So completely remove
+     * them from my hashtable (and life.)
+     */
     public void resetLastTickleTime(int index){
-        lastTickleTime.set(index,-1.0);
+        lastTickleTime.remove(index);
     }
     
     private void decay( ){
-      for(int i=0; i<lastTickleTime.size( ); i++){
-        Edge toRemoveIn = null;
-        Edge toRemoveOut = null;
-        double val = lastTickleTime.get(i);
-        //if the people last met longer than the threshold ago
-        if(Sim.instance().schedule.getTime() - val > decayThreshold){
-          //Get a bag of all the edges into this person
-          Bag bIn = Sim.instance( ).people.getEdgesIn(this);
-          //for each of these edges
-          for(int j=0; j<bIn.size( ); j++){
-            //look for the person whose ID matches the ID of the person we want to decay
-            Edge edgeIn = (Edge)bIn.get(j);
-            Person otherPerson = (Person) edgeIn.getOtherNode(this);
-            int otherID = otherPerson.getID( );
-            if(otherID == i){
-              //when we find the person, make their edge the one we want to remove
-              toRemoveIn = edgeIn;
-              j = bIn.size( );
+        Enumeration<Integer> friendIDs = lastTickleTime.keys();
+        while (friendIDs.hasMoreElements()) {
+            int friendID = friendIDs.nextElement();
+
+            Edge toRemoveIn = null;
+            Edge toRemoveOut = null;
+            double val = lastTickleTime.get(friendID);
+            //if the people last met longer than the threshold ago
+            if(Sim.instance().schedule.getTime() - val > decayThreshold){
+              //Get a bag of all the edges into this person
+              Bag bIn = Sim.instance( ).people.getEdgesIn(this);
+              //for each of these edges
+              for(int j=0; j<bIn.size( ); j++){
+                //look for the person whose ID matches the ID of the person we want to decay
+                Edge edgeIn = (Edge)bIn.get(j);
+                Person otherPerson = (Person) edgeIn.getOtherNode(this);
+                int otherID = otherPerson.getID( );
+                if(otherID == friendID){
+                  //when we find the person, make their edge the one we want to remove
+                  toRemoveIn = edgeIn;
+                  j = bIn.size( );
+                }
+              }
+              //Do the same with the other edges
+              Bag bOut = Sim.instance( ).people.getEdgesOut(this);
+              Person otherPerson = null;
+              //for each of these edges
+              for(int j=0; j<bOut.size( ); j++){
+                //look for the person whose ID matches the ID of the person we want to decay
+                Edge edgeOut = (Edge)bOut.get(j);
+                otherPerson = (Person) edgeOut.getOtherNode(this);
+                int otherID = otherPerson.getID( );
+                if(otherID == friendID){
+                  //when we find the person, make their edge the one we want to remove
+                  toRemoveOut = edgeOut;
+                  otherPerson.resetLastTickleTime(ID);
+                  j = bOut.size( );
+                }
+              }
+              Sim.instance( ).people.removeEdge(toRemoveIn);
+              Sim.instance( ).people.removeEdge(toRemoveOut);
+              resetLastTickleTime(friendID);
             }
           }
-          //Do the same with the other edges
-          Bag bOut = Sim.instance( ).people.getEdgesOut(this);
-          Person otherPerson = null;
-          //for each of these edges
-          for(int j=0; j<bOut.size( ); j++){
-            //look for the person whose ID matches the ID of the person we want to decay
-            Edge edgeOut = (Edge)bOut.get(j);
-            otherPerson = (Person) edgeOut.getOtherNode(this);
-            int otherID = otherPerson.getID( );
-            if(otherID == i){
-              //when we find the person, make their edge the one we want to remove
-              toRemoveOut = edgeOut;
-              otherPerson.resetLastTickleTime(ID);
-              j = bOut.size( );
-            }
-          }
-          Sim.instance( ).people.removeEdge(toRemoveIn);
-          Sim.instance( ).people.removeEdge(toRemoveOut);
-          //reset the value to -1, as though they've never met
-          resetLastTickleTime(i);
-        }
-      }
     }
     
     private void assignAttribute(int numAttr, int poolSize, ArrayList<Double> attr){
@@ -324,7 +337,7 @@ public void printToFile(){
           }
           message = message + Integer.toString(numFriends) + " "
               + Integer.toString(groups.size( )) + " " + race + " " + gender + " "
-              + willingnessToMakeFriends + "\n";
+              + willingnessToMakeFriends +  " " + year + "\n";
           //Edit this try?
           try {
         Sim.outWriter.write(message);

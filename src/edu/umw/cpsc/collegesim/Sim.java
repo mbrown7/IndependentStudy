@@ -36,7 +36,7 @@ public class Sim extends SimState implements Steppable{
     public static int NUM_MONTHS_IN_YEAR = NUM_MONTHS_IN_ACADEMIC_YEAR +
         NUM_MONTHS_IN_SUMMER;
     public static final int MAX_ITER = 1000;
-    public static final int NUM_SIMULATION_YEARS=  6;
+    public static final int NUM_SIMULATION_YEARS=  8;
     public static File outF;
 	public static BufferedWriter outWriter;
 	public static int currentStudentID = 0;
@@ -99,7 +99,7 @@ public class Sim extends SimState implements Steppable{
 			groups.add(group);
 		}
 
-		schedule.scheduleOnceIn(1, this);
+		schedule.scheduleOnceIn(1.1, this);
 
 	}
 	
@@ -155,8 +155,8 @@ public class Sim extends SimState implements Steppable{
 
 	public void step(SimState state){
 		if((int) (schedule.getTime()/NUM_MONTHS_IN_YEAR)<=NUM_SIMULATION_YEARS){
-			System.out.println("Year: "+(int) schedule.getTime()/NUM_MONTHS_IN_YEAR);
 			if(nextMonthInAcademicYear()){
+                System.out.println("Year: "+(int) schedule.getTime()/NUM_MONTHS_IN_YEAR);
 				schedule.scheduleOnceIn(NUM_MONTHS_IN_ACADEMIC_YEAR, this);
 				for(int x = 0; x<peopleList.size(); x++){
 					peopleList.get(x).incrementYear();
@@ -198,7 +198,7 @@ public class Sim extends SimState implements Steppable{
 				}
 				for(int x = 0; x<peopleList.size(); x++){
 					peopleList.get(x).printToFile();
-					if(peopleList.get(x).getYear()==4){
+					if(peopleList.get(x).getYear()>=4){
 						System.out.println("Person " + peopleList.get(x).getID() + " has graduated! Congrats!");
 						toRemove.add(peopleList.get(x));
 					}else if(random.nextDouble()<=DROPOUT_RATE){
