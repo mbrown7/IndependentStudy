@@ -291,29 +291,6 @@ System.out.println("Student " + ID + " is leaving...");
     
     //If we've done the maximum number of iterations, then stop; otherwise, keep stepping
     if(numTimes >= Sim.MAX_ITER){
-      /*
-<<<<<<< HEAD
-      String message = Integer.toString(ID) + " ";
-          Bag b = Sim.instance( ).people.getEdgesIn(this);
-          int numFriends = 0;
-          for (int i=0; i<b.size(); i++) {
-              numFriends++;
-          }
-          message = message + Integer.toString(numFriends) + " "
-              + Integer.toString(groups.size( )) + " " + race + " " + gender + " "
-              + willingnessToMakeFriends + "\n";
-          //Edit this try?
-          try {
-        Sim.outWriter.write(message);
-        System.out.println("here");
-      } catch (IOException e) {
-        e.printStackTrace();
-        System.out.println("bad");
-      }
-=======
->>>>>>> 4554d6937f367188ee37f28038cf7633f88696b3
-      System.out.println(this);
-      */
     }else{
             if (Sim.instance().nextMonthInAcademicYear()) {
                 // It's not the end of the academic year yet. Run again

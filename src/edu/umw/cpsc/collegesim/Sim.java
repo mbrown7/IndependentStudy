@@ -104,9 +104,6 @@ public class Sim extends SimState implements Steppable{
 	}
 	
 	public static void main(String[] args) throws IOException {
-		/*outF = new File("output.txt");
-		outF.createNewFile( );
-		outWriter = new BufferedWriter(new FileWriter(outF));*/
         doLoop(new MakesSimState() { 
             public SimState newInstance(long seed, String[] args) {
                 Sim.SEED = seed;
@@ -116,29 +113,6 @@ public class Sim extends SimState implements Steppable{
                 return Sim.class;
             }
         }, args);
-       /*
-        //outWriter.close( );
-        Bag p = people.getAllNodes( );
-        for(int j=0; j<p.size( ); j++){
-        	Person person = (Person)p.get(j);
-        	String message = Integer.toString(person.getID( )) + " ";
-        	Bag b = Sim.instance( ).people.getEdgesIn(person);
-        	int numFriends = 0;
-        	for (int i=0; i<b.size(); i++) {
-        		numFriends++;
-        	}
-        	message = message + Integer.toString(numFriends) + " "
-        		+ Integer.toString(groups.size( )) + " " + person.getRace( ) + " " + person.getGender( )
-        		+ " " + person.getWillingnessToMakeFriends( ) + "\n";
-        	//Edit this try?
-        	try {
-        		Sim.outWriter.write(message);
-        	} catch (IOException e) {
-        		e.printStackTrace();
-        	}
-        }
-        outWriter.close( );
-*/
 	}
 
 	public void finish(){
