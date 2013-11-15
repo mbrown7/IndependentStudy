@@ -24,9 +24,6 @@ public class Group implements Steppable{
   private final int MINIMUM_GROUP_SIZE = 3;
   private final int NUM_PEOPLE_TO_RECRUIT = 10;
   private int id;
-  private int size = 0;//based on how many people join-- affects it for now by decreasing the recruitment factor when increased-- gotta think of a way to scale it though to effect the closeness appropriately 
-  private int tightness=0;//based on individual students' willingness to make friends in the group
-  private int frequency;//random 1-10
   private int recruitmentFactor;//random 1-10
   private MersenneTwisterFast rand = Sim.instance( ).random;
   int numTimes = 0;
@@ -36,7 +33,6 @@ public class Group implements Steppable{
   public Group(int x){
     id = x;
     rand = Sim.instance( ).random;
-    frequency=rand.nextInt(10)+1; 
     recruitmentFactor=rand.nextInt(10)+1; 
     students = new ArrayList<Person>();
   }
@@ -58,7 +54,6 @@ public class Group implements Steppable{
       students.add(randStudent);
       randStudent.joinGroup(this);
     }
-    size = students.size();
   }
 
   public ArrayList<Person> findStudentsToRecruit(ArrayList<Person> people){
@@ -90,17 +85,9 @@ public class Group implements Steppable{
     //    System.out.println("Person " + s.getID() + " looks at group " + id);
         if(r>RECRUITMENT_REQUIRED){
             students.add(s);
-          s.joinGroup(this);
+            s.joinGroup(this);
      //     System.out.println("Person " + s.getID() + " joined group " + id);
         }
-        size = students.size();
-        int t=0;
-        for(int x = 0; x<size; x++){
-          t += students.get(x).getWillingnessToMakeFriends();
-        }
-        if(size>0){
-          tightness = t/size;
-      }
       }
     }
   
@@ -122,7 +109,7 @@ public class Group implements Steppable{
      *   Person passed has to the existing members of this group.
      */
   public double affinityTo(Person p) {
-      if(size>0){
+      if(getSize()>0){
         double temp=0;
         for(int x = 0; x<students.size(); x++){
           temp = p.similarityTo(students.get(x));
@@ -230,19 +217,7 @@ public class Group implements Steppable{
       numTimes++;
   }
 
-  
-  public void setSize(int s){
-    size=s;
-  }
-  
-  public void setTightness(int t){
-    tightness=t;
-  }
-  
-  public void setFrequency(int f){
-    frequency=f;
-  }
-  
+
   public void setRecruitmentFactor(int r){
     recruitmentFactor=r;
   }
@@ -250,26 +225,15 @@ public class Group implements Steppable{
   public int getSize(){
     return students.size();
   }
-  
-  public int getTightness(){
-    return tightness;
-  }
-  
-  public int getFrequency(){
-    return frequency;
-  }
-  
+
   public double getRecruitmentFactor(){
     return recruitmentFactor;
   }
   
-  public int getCloseness(){
+ /* public int getCloseness(){
     return (tightness+frequency+recruitmentFactor)/3; //maybe this could be used for leaving the group
-  }
+  }*/
 
-  public String toString(){
-    return "Closeness: "+ getCloseness() + " (Size: " + size + " Tightness: " + tightness + " Frequency: " + frequency + " Recruitment Factor: "+ recruitmentFactor + ")";
-  }
 
   public void listMembers(){
     System.out.println("The following students are in group " + id + ":");
@@ -281,10 +245,6 @@ public class Group implements Steppable{
   public int getID(){
     return id;
   }
-  
-  public void setID(int i){
-    id=i;
-  }
 
   public Person getPersonAtIndex(int x){
     return students.get(x);
@@ -295,6 +255,12 @@ public class Group implements Steppable{
           if(students.get(x).equals(p)){
             students.remove(x);
           }
+      }
+    }
+
+    public void removeEveryoneFromGroup(){
+      for(int x = 0; x<students.size(); x++){
+        students.get(x).leaveGroup(this);
       }
     }
 

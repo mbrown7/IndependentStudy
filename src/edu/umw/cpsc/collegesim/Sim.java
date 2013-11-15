@@ -24,6 +24,9 @@ public class Sim extends SimState implements Steppable{
 //	public static Network lastMet = new Network(false);
 	private static final int NUM_PEOPLE = 100;
 	private static final int NUM_GROUPS = 30;
+	private static final int NUM_PEOPLE_ENROLLING_EACH_YEAR = 25;
+	private static final int NUM_GROUPS_ADDED_EACH_YEAR = 10;
+	private static final double DROPOUT_RATE = .02;
 	private static ArrayList<Group> groups = new ArrayList<Group>();
 	private static ArrayList<Person> peopleList = new ArrayList<Person>();
     private static long SEED = 0;
@@ -33,10 +36,11 @@ public class Sim extends SimState implements Steppable{
     public static int NUM_MONTHS_IN_YEAR = NUM_MONTHS_IN_ACADEMIC_YEAR +
         NUM_MONTHS_IN_SUMMER;
     public static final int MAX_ITER = 1000;
-    public static final int numYears =  6;
-
+    public static final int NUM_SIMULATION_YEARS=  6;
     public static File outF;
 	public static BufferedWriter outWriter;
+	public static int currentStudentID = 0;
+	public static int currentGroupID = 0; 
 
     
     // Here is the schedule!
@@ -51,11 +55,11 @@ public class Sim extends SimState implements Steppable{
     }
 
     public static int getNumPeople( ){
-    	return NUM_PEOPLE;
+    	return peopleList.size();
     }
 
     public int getNumGroups(){
-    	return NUM_GROUPS;
+    	return groups.size();
     }
 
     public static synchronized Sim instance( ){
@@ -78,7 +82,8 @@ public class Sim extends SimState implements Steppable{
 		//create people, put them in the network, and add them to the
 		//schedule
 		for(int i=0; i<NUM_PEOPLE; i++){
-			Person person = new Person(i);
+			Person person = new Person(currentStudentID);
+			currentStudentID++;
 			person.setYear(random.nextInt(4)+1);
 			peopleList.add(person);
 			people.addNode(person);
@@ -87,9 +92,9 @@ public class Sim extends SimState implements Steppable{
 		}
 
 		for(int x = 0; x<NUM_GROUPS; x++){
-			Group group = new Group(x);
+			Group group = new Group(currentGroupID);
+			currentGroupID++;
 			group.selectStartingStudents(peopleList);
-			//group.listMembers();
 			schedule.scheduleOnceIn(2.0,group);
 			groups.add(group);
 		}
@@ -102,7 +107,7 @@ public class Sim extends SimState implements Steppable{
 		/*outF = new File("output.txt");
 		outF.createNewFile( );
 		outWriter = new BufferedWriter(new FileWriter(outF));*/
-        doLoop(new MakesSimState() {
+        doLoop(new MakesSimState() { 
             public SimState newInstance(long seed, String[] args) {
                 Sim.SEED = seed;
                 return instance();
@@ -112,9 +117,7 @@ public class Sim extends SimState implements Steppable{
             }
         }, args);
        /*
-<<<<<<< HEAD
         //outWriter.close( );
-=======
         Bag p = people.getAllNodes( );
         for(int j=0; j<p.size( ); j++){
         	Person person = (Person)p.get(j);
@@ -135,36 +138,55 @@ public class Sim extends SimState implements Steppable{
         	}
         }
         outWriter.close( );
->>>>>>> 4554d6937f367188ee37f28038cf7633f88696b3
 */
 	}
 
 	public void finish(){
 		/*for(int x = 0; x<NUM_GROUPS; x++){
 			groups.get(x).listMembers();
-		}*/
-		//System.out.println("Person 0 should meet:"); //just an example of how getPeopleInGroups() should work
+		}
+		System.out.println("Person 0 should meet:"); //just an example of how getPeopleInGroups() should work
 		Bag peopleInGroups = peopleList.get(0).getPeopleInGroups();
-		/*for(int x = 0; x < peopleInGroups.size(); x++){
+		for(int x = 0; x < peopleInGroups.size(); x++){
 			System.out.println(peopleInGroups.get(x));
 		}*/
 
 	}
 
 	public void step(SimState state){
-		if((int) (schedule.getTime()/NUM_MONTHS_IN_YEAR)<=numYears){
+		if((int) (schedule.getTime()/NUM_MONTHS_IN_YEAR)<=NUM_SIMULATION_YEARS){
 			System.out.println("Year: "+(int) schedule.getTime()/NUM_MONTHS_IN_YEAR);
 			if(nextMonthInAcademicYear()){
 				schedule.scheduleOnceIn(NUM_MONTHS_IN_ACADEMIC_YEAR, this);
+				for(int x = 0; x<peopleList.size(); x++){
+					peopleList.get(x).incrementYear();
+				}
+				for(int x = 0; x<NUM_PEOPLE_ENROLLING_EACH_YEAR; x++){
+					Person person = new Person(currentStudentID);
+					currentStudentID++;
+					person.setYear(1);
+					peopleList.add(person);
+					people.addNode(person);
+					schedule.scheduleOnceIn(1.5,person);
+				}
+				for(int x = 0; x<NUM_GROUPS_ADDED_EACH_YEAR; x++){
+					Group group = new Group(currentGroupID);
+					currentGroupID++;
+					group.selectStartingStudents(peopleList);
+					schedule.scheduleOnceIn(2.0,group);
+					groups.add(group);
+				}
+			}else{
+				System.out.println("End of year: "+(int) (schedule.getTime()/NUM_MONTHS_IN_YEAR));
+				schedule.scheduleOnceIn(NUM_MONTHS_IN_SUMMER, this);
+				ArrayList<Person> toRemove = new ArrayList<Person>();
+				ArrayList<Group> toRemoveGroups = new ArrayList<Group>();
 				if(outWriter!=null){
 					try{
 						outWriter.close();
 					}catch(IOException e){
 						System.out.println("Couldn't close file");
 					}
-				}
-				for(int x = 0; x<peopleList.size(); x++){
-					peopleList.get(x).incrementYear();
 				}
 				String f="year"+(int) (schedule.getTime()/NUM_MONTHS_IN_YEAR);
 				try{
@@ -174,20 +196,32 @@ public class Sim extends SimState implements Steppable{
 				}catch(IOException e){
 					System.out.println("Couldn't create file");
 				}
-			}else{
-				System.out.println("End of year: "+(int) (schedule.getTime()/NUM_MONTHS_IN_YEAR));
-				schedule.scheduleOnceIn(NUM_MONTHS_IN_SUMMER, this);
-				ArrayList<Person> toRemove = new ArrayList<Person>();
 				for(int x = 0; x<peopleList.size(); x++){
+					peopleList.get(x).printToFile();
 					if(peopleList.get(x).getYear()==4){
 						System.out.println("Person " + peopleList.get(x).getID() + " has graduated! Congrats!");
 						toRemove.add(peopleList.get(x));
+					}else if(random.nextDouble()<=DROPOUT_RATE){
+						System.out.println("Person " + peopleList.get(x).getID() + " has dropped out of school.");
+						toRemove.add(peopleList.get(x));
 					}
 				}
+				for(int x = 0; x<groups.size(); x++){
+					if(random.nextDouble(true, true)>.75){
+						System.out.println("Removing group " + groups.get(x).getID());
+						toRemoveGroups.add(groups.get(x));
+					}
+				}
+				for(int x = 0; x<toRemoveGroups.size(); x++){
+					toRemoveGroups.get(x).removeEveryoneFromGroup();
+					groups.remove(toRemoveGroups.get(x));
+				}
 				for(int x = 0; x<toRemove.size(); x++){
-					toRemove.get(x).printToFile();
+					toRemove.get(x).leaveUniversity();
 					peopleList.remove(toRemove.get(x));
 				}
+				toRemoveGroups.clear();
+				toRemove.clear();
 			}
 		}else{
 			schedule.seal();
