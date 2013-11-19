@@ -41,7 +41,7 @@ public class Person implements Steppable{
   private Race race;
   private Gender gender;
     
-    private double willingnessToMakeFriends;
+    private double willingnessToJoinGroups;
     private ArrayList<Group> groups;
   
     int NUM_CONSTANT_ATTRIBUTES = 10;
@@ -214,7 +214,7 @@ System.out.println("Student " + ID + " is leaving...");
     }else{
       gender = Gender.MALE;
     }
-    willingnessToMakeFriends = normal.nextDouble();
+    willingnessToJoinGroups = normal.nextDouble();
   }
   
   //What to do when meeting a new person
@@ -316,7 +316,7 @@ public void printToFile(){
           }
           message = message + Integer.toString(numFriends) + " "
               + Integer.toString(groups.size( )) + " " + race + " " + gender + " "
-              + willingnessToMakeFriends +  " " + year + "\n";
+              + willingnessToJoinGroups +  " " + year + "\n";
           //Edit this try?
           try {
         Sim.outWriter.write(message);
@@ -375,8 +375,8 @@ public void printToFile(){
 	  return gender;
   }
  
-  double getWillingnessToMakeFriends( ){
-    return willingnessToMakeFriends;
+  double getWillingnessToJoinGroups( ){
+    return willingnessToJoinGroups;
   }
   
   void joinGroup(Group group){

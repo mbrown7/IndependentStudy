@@ -77,12 +77,12 @@ public class Group implements Steppable{
     if(!doesGroupContainStudent(s)){
       /*System.out.println("A: " + affinityTo(s));
       System.out.println("RF: " +recruitmentFactor);
-      System.out.println("Willing: " + s.getWillingnessToMakeFriends());
+      System.out.println("Willing: " + s.getWillingnessToJoinGroups());
       System.out.println("Rand: " + rand.nextInt(10));
       */
 
       //FIX FOR DECIMALS
-        double r = (affinityTo(s) + recruitmentFactor + s.getWillingnessToMakeFriends()*2 + rand.nextDouble()*2)/6.0; //want to mess with balence here
+        double r = (affinityTo(s) + recruitmentFactor + s.getWillingnessToJoinGroups()*2 + rand.nextDouble()*2)/6.0; //want to mess with balence here
      //   System.out.println("\nFinal Recruitment: " + r);
     //    System.out.println("Person " + s.getID() + " looks at group " + id);
         if(r>RECRUITMENT_REQUIRED){
