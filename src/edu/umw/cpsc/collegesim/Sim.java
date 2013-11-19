@@ -162,40 +162,42 @@ public class Sim extends SimState implements Steppable{
 						System.out.println("Couldn't close file");
 					}
 				}
-				String f="year"+(int) (schedule.getTime()/NUM_MONTHS_IN_YEAR);
-				try{
-					outF = new File(f);
-					outF.createNewFile( );
-					outWriter = new BufferedWriter(new FileWriter(outF));
-				}catch(IOException e){
-					System.out.println("Couldn't create file");
-				}
-				for(int x = 0; x<peopleList.size(); x++){
-					peopleList.get(x).printToFile();
-					if(peopleList.get(x).getYear()>=4){
-						System.out.println("Person " + peopleList.get(x).getID() + " has graduated! Congrats!");
-						toRemove.add(peopleList.get(x));
-					}else if(random.nextDouble()<=DROPOUT_RATE){
-						System.out.println("Person " + peopleList.get(x).getID() + " has dropped out of school.");
-						toRemove.add(peopleList.get(x));
+				if((int)(schedule.getTime()/NUM_MONTHS_IN_YEAR)!=NUM_SIMULATION_YEARS){
+					String f="year"+(int) (schedule.getTime()/NUM_MONTHS_IN_YEAR);
+					try{
+						outF = new File(f);
+						outF.createNewFile( );
+						outWriter = new BufferedWriter(new FileWriter(outF));
+					}catch(IOException e){
+						System.out.println("Couldn't create file");
 					}
-				}
-				for(int x = 0; x<groups.size(); x++){
-					if(random.nextDouble(true, true)>.75){
-						System.out.println("Removing group " + groups.get(x).getID());
-						toRemoveGroups.add(groups.get(x));
+					for(int x = 0; x<peopleList.size(); x++){
+						peopleList.get(x).printToFile();
+						if(peopleList.get(x).getYear()>=4){
+							System.out.println("Person " + peopleList.get(x).getID() + " has graduated! Congrats!");
+							toRemove.add(peopleList.get(x));
+						}else if(random.nextDouble()<=DROPOUT_RATE){
+							System.out.println("Person " + peopleList.get(x).getID() + " has dropped out of school.");
+							toRemove.add(peopleList.get(x));
+						}
 					}
+					for(int x = 0; x<groups.size(); x++){
+						if(random.nextDouble(true, true)>.75){
+							System.out.println("Removing group " + groups.get(x).getID());
+							toRemoveGroups.add(groups.get(x));
+						}
+					}
+					for(int x = 0; x<toRemoveGroups.size(); x++){
+						toRemoveGroups.get(x).removeEveryoneFromGroup();
+						groups.remove(toRemoveGroups.get(x));
+					}
+					for(int x = 0; x<toRemove.size(); x++){
+						toRemove.get(x).leaveUniversity();
+						peopleList.remove(toRemove.get(x));
+					}
+					toRemoveGroups.clear();
+					toRemove.clear();
 				}
-				for(int x = 0; x<toRemoveGroups.size(); x++){
-					toRemoveGroups.get(x).removeEveryoneFromGroup();
-					groups.remove(toRemoveGroups.get(x));
-				}
-				for(int x = 0; x<toRemove.size(); x++){
-					toRemove.get(x).leaveUniversity();
-					peopleList.remove(toRemove.get(x));
-				}
-				toRemoveGroups.clear();
-				toRemove.clear();
 			}
 		}else{
 			schedule.seal();

@@ -15,16 +15,16 @@ import sim.util.Bag;
 
 
 public class Group implements Steppable{
-  //all hard coded rands are subject to change
   private final int MINIMUM_START_GROUP_SIZE = 3;
   private final int MAXIMUM_START_GROUP_SIZE = 8; 
-  private final int RECRUITMENT_REQUIRED = 6;     //lower this to accept more students in group per step
+  private final double RECRUITMENT_REQUIRED = .6;     //lower this to accept more students in group per step
   private final double LIKELYHOOD_OF_RANDOMLY_LEAVING_GROUP = .1;   //increase this to remove more students in group per step
   private final double LIKELYHOOD_OF_RANDOMLY_CHANGING_ATTRIBUTE = .1;
   private final int MINIMUM_GROUP_SIZE = 3;
   private final int NUM_PEOPLE_TO_RECRUIT = 10;
+  private final double STANDARD_DEVIATION_WILLINGNESS = .15;
   private int id;
-  private int recruitmentFactor;//random 1-10
+  private double recruitmentFactor;
   private MersenneTwisterFast rand = Sim.instance( ).random;
   int numTimes = 0;
 
@@ -33,7 +33,7 @@ public class Group implements Steppable{
   public Group(int x){
     id = x;
     rand = Sim.instance( ).random;
-    recruitmentFactor=rand.nextInt(10)+1; 
+    recruitmentFactor = rand.nextDouble();
     students = new ArrayList<Person>();
   }
 
@@ -80,7 +80,9 @@ public class Group implements Steppable{
       System.out.println("Willing: " + s.getWillingnessToMakeFriends());
       System.out.println("Rand: " + rand.nextInt(10));
       */
-        double r = (affinityTo(s) + recruitmentFactor + s.getWillingnessToMakeFriends()*2 + (rand.nextInt(10)+1)*2)/6.0; //want to mess with balence here
+
+      //FIX FOR DECIMALS
+        double r = (affinityTo(s) + recruitmentFactor + s.getWillingnessToMakeFriends()*2 + rand.nextDouble()*2)/6.0; //want to mess with balence here
      //   System.out.println("\nFinal Recruitment: " + r);
     //    System.out.println("Person " + s.getID() + " looks at group " + id);
         if(r>RECRUITMENT_REQUIRED){
@@ -114,9 +116,9 @@ public class Group implements Steppable{
         for(int x = 0; x<students.size(); x++){
           temp = p.similarityTo(students.get(x));
         }
-        return (temp/students.size()*10);
+        return temp/students.size();
       }else{
-        return 5;
+        return .5;
       }
 
         // write this maddie
@@ -218,7 +220,7 @@ public class Group implements Steppable{
   }
 
 
-  public void setRecruitmentFactor(int r){
+  public void setRecruitmentFactor(double r){
     recruitmentFactor=r;
   }
   

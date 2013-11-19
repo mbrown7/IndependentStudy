@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Enumeration;
+import sim.util.distribution.Normal;
 
 import sim.engine.*;
 import sim.util.*;
@@ -33,13 +34,14 @@ public class Person implements Steppable{
   private int ID;
   private int year;
   private MersenneTwisterFast generator = Sim.instance( ).random;
+  Normal normal = new Normal(.5, .15, generator);
   private int numTimes = 1;
   private int decayThreshold = 4;
   
   private Race race;
   private Gender gender;
     
-    private int willingnessToMakeFriends;
+    private double willingnessToMakeFriends;
     private ArrayList<Group> groups;
   
     int NUM_CONSTANT_ATTRIBUTES = 10;
@@ -212,7 +214,7 @@ System.out.println("Student " + ID + " is leaving...");
     }else{
       gender = Gender.MALE;
     }
-    willingnessToMakeFriends = generator.nextInt(10)+1;
+    willingnessToMakeFriends = normal.nextDouble();
   }
   
   //What to do when meeting a new person
@@ -373,7 +375,7 @@ public void printToFile(){
 	  return gender;
   }
  
-  int getWillingnessToMakeFriends( ){
+  double getWillingnessToMakeFriends( ){
     return willingnessToMakeFriends;
   }
   
