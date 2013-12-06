@@ -33,10 +33,10 @@ public class Person implements Steppable{
 
   private int ID;
   private int year;
-  private MersenneTwisterFast generator = Sim.instance( ).random;
+  private static MersenneTwisterFast generator = Sim.instance( ).random;
   Normal normal = new Normal(.5, .15, generator);
-  private int numTimes = 1;
-  private int decayThreshold = 4;
+  public static int numTimes = 1;
+  public static int decayThreshold = 4;
   
   private Race race;
   private Gender gender;
@@ -44,23 +44,23 @@ public class Person implements Steppable{
     private double willingnessToJoinGroups;
     private ArrayList<Group> groups;
   
-    int NUM_CONSTANT_ATTRIBUTES = 10;
+    public static int NUM_CONSTANT_ATTRIBUTES = 10;
   //constant attributes, like place of birth, etc.
   private ArrayList<Boolean> attributesK1     //Constant attributes
     = new ArrayList<Boolean>(Collections.nCopies(NUM_CONSTANT_ATTRIBUTES, false));
   
-    int NUM_INDEPENDENT_ATTRIBUTES = 2;
-    int INDEPENDENT_ATTRIBUTE_POOL = 5;
+    public static int NUM_INDEPENDENT_ATTRIBUTES = 2;
+    public static int INDEPENDENT_ATTRIBUTE_POOL = 5;
   //independent attributes, which can change but do not affect each other
   private ArrayList<Double> attributesK2      //Independent attributes
     = new ArrayList<Double>(Collections.nCopies(INDEPENDENT_ATTRIBUTE_POOL, 0.0));
   //the following is the interval inside which two attributes are considered "the same"
   //so for attribute 14, if this has 0.5 and other has 0.3, they have this attribute in
   //common, but if other had 0.2, they would not have this attribute in common
-  double INDEPENDENT_INTERVAL = 0.2;
+  public static double INDEPENDENT_INTERVAL = 0.2;
   
-    int NUM_DEPENDENT_ATTRIBUTES = 2;
-    int DEPENDENT_ATTRIBUTE_POOL = 5;
+    public static int NUM_DEPENDENT_ATTRIBUTES = 2;
+    public static int DEPENDENT_ATTRIBUTE_POOL = 5;
   //dependent attributes, which can change but you only have 1 unit to split among them
   //in other words, if one increases, then another decreases
     private ArrayList<Double> attributesK3      //Dependent attributes
@@ -68,7 +68,7 @@ public class Person implements Steppable{
     //the following is the interval inside which two attributes are considered "the same"
     //so for attribute 14, if this has 0.5 and other has 0.2, they have this attribute in
     //common, but if other had 0.1, they would not have this attribute in common
-    double DEPENDENT_INTERVAL = 0.3;
+    public static double DEPENDENT_INTERVAL = 0.3;
 
     //A list that will house the absolute sim time that this person first met,
     //or last tickled, each other person
