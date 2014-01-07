@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 
+/** The top-level singleton simulation class, with main(). */
 public class Sim extends SimState implements Steppable{
 
 //	public static Network lastMet = new Network(false);
@@ -17,29 +18,29 @@ public class Sim extends SimState implements Steppable{
     /**
      * The number of people, of random year-in-college (fresh, soph, etc.)
      * that the simulation will begin with. */
-	private static final int INIT_NUM_PEOPLE = 100;
+	public static final int INIT_NUM_PEOPLE = 100;
 
 
     /**
      * The number of groups, with random initial membership, that the
      * simulation will begin with. */
-	private static final int INIT_NUM_GROUPS = 30;
+	public static final int INIT_NUM_GROUPS = 30;
 
 
     /**
      * The number of newly enrolling freshmen each year.     */
-	private static final int NUM_PEOPLE_ENROLLING_EACH_YEAR = 25;
+	public static final int NUM_PEOPLE_ENROLLING_EACH_YEAR = 25;
 
 
     /**
      * The number of groups, with random initial membership, that the
      * simulation will begin with. */
-	private static final int NUM_GROUPS_ADDED_EACH_YEAR = 10;
+	public static final int NUM_GROUPS_ADDED_EACH_YEAR = 10;
 
 
     /**
-     * The per-year probability of each student dropping out. */
-	private static final double DROPOUT_RATE = .02;
+     * The per-year probability of each student dropping out of college. */
+	public static final double DROPOUT_RATE = .02;
 
 	private static ArrayList<Group> groups = new ArrayList<Group>();
 	private static ArrayList<Person> peopleList = new ArrayList<Person>();
@@ -118,6 +119,8 @@ public class Sim extends SimState implements Steppable{
 
 	}
 	
+    /**
+     * Run the simulation from the command line (no arguments necessary.) */
 	public static void main(String[] args) throws IOException {
         doLoop(new MakesSimState() { 
             public SimState newInstance(long seed, String[] args) {

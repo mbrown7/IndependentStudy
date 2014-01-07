@@ -69,14 +69,14 @@ public class Person implements Steppable{
      * you spend reading graphic novels, because time is constant. */
     public static final double DEP_WEIGHT = 2.5;
     
-    /** The coefficient (see also {@link FRIENDSHIP_INTERCEPT}) of a linear
+    /** The coefficient (see also {@link #FRIENDSHIP_INTERCEPT}) of a linear
      * equation to transform perceived similarity to probability of
      * friendship. If x is the perceived similarity, then y=mx+b, where m
      * is the FRIENDSHIP_COEFFICIENT and b the FRIENDSHIP_INTERCEPT gives
      * the probability of becoming friends. */
     public static final double FRIENDSHIP_COEFFICIENT = .7;
 
-    /** See {@link FRIENDSHIP_COEFFICIENT}. */
+    /** See {@link #FRIENDSHIP_COEFFICIENT}. */
     public static final double FRIENDSHIP_INTERCEPT = .2;
   
     /** Each time step (= 1 month), how many other people from a person's 
@@ -108,7 +108,7 @@ public class Person implements Steppable{
     private ArrayList<Group> groups;
   
     /** The total number of "constant" attributes in the system. (See {@link
-     * CONST_WEIGHT}.) Each person will have a boolean value for each,
+     * #CONST_WEIGHT}.) Each person will have a boolean value for each,
      * indicating whether they do (or do not) possess the attribute. */
     public static int CONSTANT_ATTRIBUTE_POOL = 10;
     private ArrayList<Boolean> attributesK1     //Constant attributes
@@ -116,11 +116,11 @@ public class Person implements Steppable{
             Collections.nCopies(CONSTANT_ATTRIBUTE_POOL, false));
   
     /** The number of "independent" attributes each person has. (See {@link
-     * INDEP_WEIGHT}.) */
+     * #INDEP_WEIGHT}.) */
     public static int NUM_INDEPENDENT_ATTRIBUTES = 2;
 
     /** The total number of "independent" attributes in the system. (See 
-     * {@link INDEP_WEIGHT}.) Each person will either have the attribute or
+     * {@link #INDEP_WEIGHT}.) Each person will either have the attribute or
      * not; and if they do, they will have a double value assigned
      * indicating its strength. */
     public static int INDEPENDENT_ATTRIBUTE_POOL = 5;
@@ -136,11 +136,11 @@ public class Person implements Steppable{
     public static double INDEPENDENT_INTERVAL = 0.2;
   
     /** The number of "dependent" attributes each person has. (See {@link
-     * DEP_WEIGHT}.) */
+     * #DEP_WEIGHT}.) */
     public static int NUM_DEPENDENT_ATTRIBUTES = 2;
 
     /** The total number of "dependent" attributes in the system. (See 
-     * {@link DEP_WEIGHT}.) Each person will either have the attribute or
+     * {@link #DEP_WEIGHT}.) Each person will either have the attribute or
      * not; and if they do, they will have a double value assigned
      * indicating its strength. */
     public static int DEPENDENT_ATTRIBUTE_POOL = 5;
@@ -164,6 +164,8 @@ public class Person implements Steppable{
       = new Hashtable<Integer,Double>();
 
     
+    /** Removes this student from the university, and the simulation, leaving
+     * all groups and deleting it from the student body. */
     public void leaveUniversity( ){
     	//This removes all the friendships this person holds and makes 
         //them leave all groups
@@ -372,9 +374,9 @@ public class Person implements Steppable{
   /**
    * Make this person perform one month's actions. These include:
    * <ol>
-   * <li>Encounter {@link NUM_TO_MEET_GROUP} other people who are members
+   * <li>Encounter {@link #NUM_TO_MEET_GROUP} other people who are members
    * of one or more of their current groups.</li>
-   * <li>Encounter {@link NUM_TO_MEET_POP} other people from the student
+   * <li>Encounter {@link #NUM_TO_MEET_POP} other people from the student
    * body at large (who may or may not be members of their current
    * groups.)</li>
    * <li>Decay this user's existing friendships to reflect the passage of
@@ -619,7 +621,7 @@ public class Person implements Steppable{
   }
   
   /** Returns a list of doubles, one for each of the {@link
-   * DEPENDENT_ATTRIBUTE_POOL} possible dep attributes. This will indicate
+   * #DEPENDENT_ATTRIBUTE_POOL} possible dep attributes. This will indicate
    * the degree to which the person possesses each of those attributes (0 =
    * does not have that attribute at all.) */
   public ArrayList<Double> getDependentAttributes(){
@@ -627,7 +629,7 @@ public class Person implements Steppable{
   }
   
   /** Returns a list of doubles, one for each of the {@link
-   * INDEPENDENT_ATTRIBUTE_POOL} possible indep attributes. This will *
+   * #INDEPENDENT_ATTRIBUTE_POOL} possible indep attributes. This will *
    * indicate the degree to which the person possesses each of those
    * attributes (0 = does not have that attribute at all.) */
   public ArrayList<Double> getIndependentAttributes(){
@@ -709,9 +711,10 @@ public class Person implements Steppable{
 
     /** Marks this Person as no longer being a member of the Group passed.
      * Should <i>not</i> be called in isolation, else the Group object will
-     * still think the Person is a member! See {@link Person#leaveGroup}.
+     * still think the Person is a member! See {@link
+     * edu.umw.cpsc.collegesim.Group#removeEveryoneFromGroup()}.
      */
-  void leaveGroup(Group g){
+public  void leaveGroup(Group g){
     for(int x = 0; x<groups.size(); x++){
       if(groups.get(x).equals(g)){
         groups.remove(x);

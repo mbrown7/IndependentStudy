@@ -27,7 +27,7 @@ public class Group implements Steppable{
 
     /**
      * The lower bound on the size of a newly created group. (See {@link
-     * MINIMUM_GROUP_SIZE}.) */
+     * #MINIMUM_GROUP_SIZE}.) */
     public static final int MINIMUM_START_GROUP_SIZE = 3;
   
     /**
@@ -54,7 +54,8 @@ public class Group implements Steppable{
   
     /**
      * Each time step, the number of students who will be "invited" to a
-     * group. (<i>i.e.</i>, have {@link recruitStudent()} called on them.)
+     * group. (<i>i.e.</i>, have {@link #recruitStudent(Person)} called on
+     * them.)
      */
     public static final int NUM_PEOPLE_TO_RECRUIT = 10;
 
@@ -297,7 +298,7 @@ public class Group implements Steppable{
     /** Sets the recruitment factor for this group, which is a number in the
      * range 0 to 1 indicating how aggressive the group is in attracting
      * members. Higher numbers increase the likelihood of {@link
-     * recruitStudent()} returning true.
+     * #recruitStudent(Person)} returning true.
      */
     public void setRecruitmentFactor(double r){
       recruitmentFactor=r;
@@ -310,7 +311,7 @@ public class Group implements Steppable{
     }
   
     /** Gets the recruitment factor for this group (See {@link
-     * setRecruitmentFactor()}.)
+     * #setRecruitmentFactor(double)}.)
      */
     public double getRecruitmentFactor(){
       return recruitmentFactor;
