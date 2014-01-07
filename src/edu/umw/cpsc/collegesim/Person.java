@@ -1,5 +1,6 @@
 package edu.umw.cpsc.collegesim;
 import java.io.IOException;
+import java.io.BufferedWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Hashtable;
@@ -11,63 +12,150 @@ import sim.util.*;
 import ec.util.*;
 import sim.field.network.*;
 
+/**
+ * A student in the CollegeSim model.
+ */
 public class Person implements Steppable{
 
     public enum Race { WHITE, MINORITY };
     public enum Gender { MALE, FEMALE };
-  public static final int PROBABILITY_WHITE = 80;
-  public static final int PROBABILITY_FEMALE = 50;
-  
-  public static final double RACE_WEIGHT = 3;
-  public static final double GEN_WEIGHT = 1;
-  public static final double CONST_WEIGHT = 1;
-  public static final double INDEP_WEIGHT = 1.5;
-  public static final double DEP_WEIGHT = 2.5;
-  
-  public static final double FRIENDSHIP_COEFFICIENT = .7;
-  public static final double FRIENDSHIP_INTERCEPT = .2;
-  
-  //The number of people to meet from groups
-  public static final int NUM_TO_MEET_GROUP = 2;
-  public static final int NUM_TO_MEET_POP = 1;
 
-  private int ID;
-  private int year;
-  private static MersenneTwisterFast generator = Sim.instance( ).random;
-  Normal normal = new Normal(.5, .15, generator);
-  public static int numTimes = 1;
-  public static int decayThreshold = 4;
+    /**
+     * Baseline prior probability that a newly generated student will be of
+     * race "WHITE". */
+    public static final double PROBABILITY_WHITE = .8;
+
+    /**
+     * Baseline prior probability that a newly generated student will be of
+     * gender "FEMALE". */
+    public static final double PROBABILITY_FEMALE = .5;
+    
+    /** A number reflecting the relative importance that race has in
+     * determining perceived similarity. The "units" of this constant are
+     * in "equivalent number of attributes"; <i>i.e.</i>, if the
+     * RACE_WEIGHT is 4, this means that if another person is the same race
+     * as you, this will impact your perceived similarity to them (and
+     * theirs to you) to the same degree that four of your individual
+     * attributes being the same would. */
+    public static final double RACE_WEIGHT = 3;
+
+    /** A number reflecting the relative importance that gender has in
+     * determining perceived similarity. The "units" of this constant are
+     * in "equivalent number of attributes"; <i>i.e.</i>, if the
+     * GENDER_WEIGHT is 4, this means that if another person is the same
+     * gender as you, this will impact your perceived similarity to them
+     * (and theirs to you) to the same degree that four of your individual
+     * attributes being the same would. */   
+    public static final double GEN_WEIGHT = 1;
+
+    /** The relative importance of "constant" attributes, with respect to
+     * other types of attributes. ("Constant" attributes are those that are
+     * unchangeable; <i>e.g.</i>, "where are you from?") */
+    public static final double CONST_WEIGHT = 1;
+
+    /** The relative importance of "independent" attributes, with respect to
+     * other types of attributes. ("Independent" attributes are those that 
+     * can vary independently with respect to each other. Having more of
+     * one indep attribute does not impact your value of another indep
+     * attribute. (<i>e.g.</i>, the degree to which you like purple does
+     * not depend on the degree to which you like basketball.) */
+    public static final double INDEP_WEIGHT = 1.5;
+
+    /** The relative importance of "dependent" attributes, with respect to
+     * other types of attributes. ("Dependent" attributes are those that
+     * affect one other. Having more of one dep attribute invariably means
+     * having relatively less of others. (<i>e.g.</i>, the degree to which
+     * you spend time mountain biking has an effect on the amount of time
+     * you spend reading graphic novels, because time is constant. */
+    public static final double DEP_WEIGHT = 2.5;
+    
+    /** The coefficient (see also {@link FRIENDSHIP_INTERCEPT}) of a linear
+     * equation to transform perceived similarity to probability of
+     * friendship. If x is the perceived similarity, then y=mx+b, where m
+     * is the FRIENDSHIP_COEFFICIENT and b the FRIENDSHIP_INTERCEPT gives
+     * the probability of becoming friends. */
+    public static final double FRIENDSHIP_COEFFICIENT = .7;
+
+    /** See {@link FRIENDSHIP_COEFFICIENT}. */
+    public static final double FRIENDSHIP_INTERCEPT = .2;
   
-  private Race race;
-  private Gender gender;
+    /** Each time step (= 1 month), how many other people from a person's 
+     * groups that person will encounter. Note that this number is only
+     * unidirectional; <i>i.e.</i>, this person may well "be met by" 
+     * numerous other people when their step() methods run. */
+    public static final int NUM_TO_MEET_GROUP = 2;
+
+    /** Each time step (= 1 month), how many other people from the overall
+     * student body a person will encounter. Note that this number is only
+     * unidirectional; <i>i.e.</i>, this person may well "be met by" 
+     * numerous other people when their step() methods run. */
+    public static final int NUM_TO_MEET_POP = 1;
+
+    // Undirected graph.
+	private static Network people = new Network(false);
+
+    private int ID;
+    private int year;
+    private static MersenneTwisterFast generator = Sim.instance( ).random;
+    private Normal normal = new Normal(.5, .15, generator);
+    private static int numTimes = 1;
+    private static int decayThreshold = 4;
+    
+    private Race race;
+    private Gender gender;
     
     private double willingnessToJoinGroups;
     private ArrayList<Group> groups;
   
-    public static int NUM_CONSTANT_ATTRIBUTES = 10;
-  //constant attributes, like place of birth, etc.
-  private ArrayList<Boolean> attributesK1     //Constant attributes
-    = new ArrayList<Boolean>(Collections.nCopies(NUM_CONSTANT_ATTRIBUTES, false));
+    /** The total number of "constant" attributes in the system. (See {@link
+     * CONST_WEIGHT}.) Each person will have a boolean value for each,
+     * indicating whether they do (or do not) possess the attribute. */
+    public static int CONSTANT_ATTRIBUTE_POOL = 10;
+    private ArrayList<Boolean> attributesK1     //Constant attributes
+        = new ArrayList<Boolean>(
+            Collections.nCopies(CONSTANT_ATTRIBUTE_POOL, false));
   
+    /** The number of "independent" attributes each person has. (See {@link
+     * INDEP_WEIGHT}.) */
     public static int NUM_INDEPENDENT_ATTRIBUTES = 2;
+
+    /** The total number of "independent" attributes in the system. (See 
+     * {@link INDEP_WEIGHT}.) Each person will either have the attribute or
+     * not; and if they do, they will have a double value assigned
+     * indicating its strength. */
     public static int INDEPENDENT_ATTRIBUTE_POOL = 5;
-  //independent attributes, which can change but do not affect each other
-  private ArrayList<Double> attributesK2      //Independent attributes
-    = new ArrayList<Double>(Collections.nCopies(INDEPENDENT_ATTRIBUTE_POOL, 0.0));
-  //the following is the interval inside which two attributes are considered "the same"
-  //so for attribute 14, if this has 0.5 and other has 0.3, they have this attribute in
-  //common, but if other had 0.2, they would not have this attribute in common
-  public static double INDEPENDENT_INTERVAL = 0.2;
+    //independent attributes, which can change but do not affect each other
+    private ArrayList<Double> attributesK2      //Independent attributes
+      = new ArrayList<Double>(Collections.nCopies(
+            INDEPENDENT_ATTRIBUTE_POOL, 0.0));
+
+    /** The interval inside which two indep attributes are considered "the
+     * same" so for attribute 14, if this has 0.5 and other has 0.2, they
+     * have this attribute in common, but if other had 0.1, they would
+     * not have this attribute in common */
+    public static double INDEPENDENT_INTERVAL = 0.2;
   
+    /** The number of "dependent" attributes each person has. (See {@link
+     * DEP_WEIGHT}.) */
     public static int NUM_DEPENDENT_ATTRIBUTES = 2;
+
+    /** The total number of "dependent" attributes in the system. (See 
+     * {@link DEP_WEIGHT}.) Each person will either have the attribute or
+     * not; and if they do, they will have a double value assigned
+     * indicating its strength. */
     public static int DEPENDENT_ATTRIBUTE_POOL = 5;
-  //dependent attributes, which can change but you only have 1 unit to split among them
-  //in other words, if one increases, then another decreases
+
+    //dependent attributes, which can change but you only have 1 unit to 
+    //split among them
+    //in other words, if one increases, then another decreases
     private ArrayList<Double> attributesK3      //Dependent attributes
-    = new ArrayList<Double>(Collections.nCopies(DEPENDENT_ATTRIBUTE_POOL, 0.0));
-    //the following is the interval inside which two attributes are considered "the same"
-    //so for attribute 14, if this has 0.5 and other has 0.2, they have this attribute in
-    //common, but if other had 0.1, they would not have this attribute in common
+      = new ArrayList<Double>(Collections.nCopies(
+            DEPENDENT_ATTRIBUTE_POOL, 0.0));
+
+    /** The interval inside which two dep attributes are considered "the
+     * same" so for attribute 14, if this has 0.5 and other has 0.2, they
+     * have this attribute in common, but if other had 0.1, they would
+     * not have this attribute in common */
     public static double DEPENDENT_INTERVAL = 0.3;
 
     //A list that will house the absolute sim time that this person first met,
@@ -77,30 +165,30 @@ public class Person implements Steppable{
 
     
     public void leaveUniversity( ){
-System.out.println("Student " + ID + " is leaving...");
-    	//This removes all the friendships this person holds and makes them leave all groups
+    	//This removes all the friendships this person holds and makes 
+        //them leave all groups
     	//to be called when the person graduates or drops out
     	for(int i=0; i<groups.size( ); i++){
     		Group group = groups.get(i);
     		group.removeStudent(this);
     	}
-    	//This SHOULD work to remove this person from the network graph AS WELL AS all edges
-    	//into it and out of it, aka, all friendships
-    	Sim.instance( ).people.removeNode(this);
+    	//This SHOULD work to remove this person from the network graph 
+        //AS WELL AS all edges into it and out of it, aka, all friendships
+    	people.removeNode(this);
     }
     
     
     /**
-     * I have now tickled the person whose ID (index) is passed. So set the
-     * last tickle time for this person to the current time.
+     * The person whose ID (index) is passed has now been tickled, so this
+     * sets the last tickle time for this person to the current time.
      */
     public void refreshLastTickleTime(int index){
         lastTickleTime.put(index,Sim.instance().schedule.getTime());
     }
     
     /**
-     * Blah, I'm no longer friends with this person. So completely remove
-     * them from my hashtable (and life.)
+     * Blah, I'm no longer friends with this person, so this completely
+     * removes them from my hashtable (and life.)
      */
     public void resetLastTickleTime(int index){
         lastTickleTime.remove(index);
@@ -117,43 +205,48 @@ System.out.println("Student " + ID + " is leaving...");
             //if the people last met longer than the threshold ago
             if(Sim.instance().schedule.getTime() - val > decayThreshold){
               //Get a bag of all the edges into this person
-              Bag bIn = Sim.instance( ).people.getEdgesIn(this);
+              Bag bIn = people.getEdgesIn(this);
               //for each of these edges
               for(int j=0; j<bIn.size( ); j++){
-                //look for the person whose ID matches the ID of the person we want to decay
+                //look for the person whose ID matches the ID of the 
+                //person we want to decay
                 Edge edgeIn = (Edge)bIn.get(j);
                 Person otherPerson = (Person) edgeIn.getOtherNode(this);
                 int otherID = otherPerson.getID( );
                 if(otherID == friendID){
-                  //when we find the person, make their edge the one we want to remove
+                  //when we find the person, make their edge the one we 
+                  //want to remove
                   toRemoveIn = edgeIn;
                   j = bIn.size( );
                 }
               }
               //Do the same with the other edges
-              Bag bOut = Sim.instance( ).people.getEdgesOut(this);
+              Bag bOut = people.getEdgesOut(this);
               Person otherPerson = null;
               //for each of these edges
               for(int j=0; j<bOut.size( ); j++){
-                //look for the person whose ID matches the ID of the person we want to decay
+                //look for the person whose ID matches the ID of the person 
+                //we want to decay
                 Edge edgeOut = (Edge)bOut.get(j);
                 otherPerson = (Person) edgeOut.getOtherNode(this);
                 int otherID = otherPerson.getID( );
                 if(otherID == friendID){
-                  //when we find the person, make their edge the one we want to remove
+                  //when we find the person, make their edge the one we 
+                  //want to remove
                   toRemoveOut = edgeOut;
                   otherPerson.resetLastTickleTime(ID);
                   j = bOut.size( );
                 }
               }
-              Sim.instance( ).people.removeEdge(toRemoveIn);
-              Sim.instance( ).people.removeEdge(toRemoveOut);
+              people.removeEdge(toRemoveIn);
+              people.removeEdge(toRemoveOut);
               resetLastTickleTime(friendID);
             }
           }
     }
     
-    private void assignAttribute(int numAttr, int poolSize, ArrayList<Double> attr){
+    private void assignAttribute(int numAttr, int poolSize, 
+        ArrayList<Double> attr){
       boolean okay;
       for(int i=0; i<numAttr; i++){
         //pick an attribute to change
@@ -161,7 +254,8 @@ System.out.println("Student " + ID + " is leaving...");
         okay = false;
         //while we have not chosen an appropriate index
         while(!okay){
-          //if the attribute is zero, it has not already been changed, so we use it
+          //if the attribute is zero, it has not already been changed, so 
+          //we use it
           if(attr.get(index) == 0.0){
             okay = true;
           //otherwise, we have to pick a new attribute
@@ -172,13 +266,14 @@ System.out.println("Student " + ID + " is leaving...");
         //pick a degree to which the person will have this attribute
         //we generate a number between 0 and 1, including 1 but not including 0
         double degree = generator.nextDouble(false, true);
-        //then we set the attribute at the chosen index to be the generated degree
+        //then we set the attribute at the chosen index to be the generated 
+        //degree
         attr.set(index, degree);
       }
     }
     
-    private boolean assignRaceGender(int probability){
-      int gen = generator.nextInt(100);
+    private boolean assignRaceGender(double probability){
+      double gen = generator.nextDouble();
       if(gen <= probability){
         return true;
       }else{
@@ -186,66 +281,77 @@ System.out.println("Student " + ID + " is leaving...");
       }
     }
     
-  Person(int ID){
+    Person(int ID){
         this.ID = ID;
-    groups = new ArrayList<Group>( );
-    
-    //Assigning constant attributes
-    for(int i=0; i<NUM_CONSTANT_ATTRIBUTES; i++){
-      boolean rand = generator.nextBoolean( );
-      attributesK1.set(i, rand);
+        groups = new ArrayList<Group>( );
+
+        //Assigning constant attributes
+        for(int i=0; i<CONSTANT_ATTRIBUTE_POOL; i++){
+            boolean rand = generator.nextBoolean( );
+            attributesK1.set(i, rand);
+        }
+        //Assigning independent attributes
+        assignAttribute(NUM_INDEPENDENT_ATTRIBUTES, 
+            INDEPENDENT_ATTRIBUTE_POOL, attributesK2);
+        //Assigning dependent attributes
+        assignAttribute(NUM_DEPENDENT_ATTRIBUTES, 
+            DEPENDENT_ATTRIBUTE_POOL, attributesK3);
+
+        //Assign a race   
+        boolean white = assignRaceGender(PROBABILITY_WHITE);
+        if(white){
+            race = Race.WHITE;
+        }else{
+            race = Race.MINORITY;
+        }
+        //Assign a gender
+        boolean female = assignRaceGender(PROBABILITY_FEMALE);
+        if(female){
+            gender = Gender.FEMALE;
+        }else{
+            gender = Gender.MALE;
+        }
+        willingnessToJoinGroups = normal.nextDouble();
     }
-    //Assigning independent attributes
-    assignAttribute(NUM_INDEPENDENT_ATTRIBUTES, INDEPENDENT_ATTRIBUTE_POOL, attributesK2);
-    //Assigning dependent attributes
-    assignAttribute(NUM_DEPENDENT_ATTRIBUTES, DEPENDENT_ATTRIBUTE_POOL, attributesK3);
-    
-    //Assign a race   
-    boolean white = assignRaceGender(PROBABILITY_WHITE);
-    if(white){
-      race = Race.WHITE;
-    }else{
-      race = Race.MINORITY;
-    }
-    //Assign a gender
-    boolean female = assignRaceGender(PROBABILITY_FEMALE);
-    if(female){
-      gender = Gender.FEMALE;
-    }else{
-      gender = Gender.MALE;
-    }
-    willingnessToJoinGroups = normal.nextDouble();
-  }
   
-  //What to do when meeting a new person
+  /**
+   * Meet the person passed as an argument, who is expected to <i>not</i>
+   * already be friends with that person. Determine whether these two will
+   * become friends, and if so, make them so. */
   public void meet(Person personToMeet){
     double similar;
     boolean friends = false;
     int personToMeetID = personToMeet.getID( );
-//System.out.println("Person " + ID + " is meeting person " + personToMeetID);            ADD BACK IN
-    //Calculate their similarity rating, and then see if they should become friends
+    //Calculate their similarity rating, and then see if they should become 
+    //friends
     similar = similarityTo(personToMeet);
-//System.out.println("similar " + similar);
     friends = areFriends(similar);
-//System.out.println("friends " + friends);                           ADD BACK IN
     //if they become friends, add their edge to the network
     //and reset when they met
     if(friends){
-        Sim.instance( ).people.addEdge(this, personToMeet, 1);
+        people.addEdge(this, personToMeet, 1);
         refreshLastTickleTime(personToMeetID);
         personToMeet.refreshLastTickleTime(ID);
     }
   }
   
-  //A function which "tickles" the relationship between "this" and the person whose ID is tickleID
+  /**
+   * Make this person "tickle" the person passed as an argument, who is
+   * presumed to <i>already</i> be friends with the person. ("Tickle"
+   * essentially means "refresh their friendship.") */
   public void tickle(Person person){
     //reset when the two last encountered each other
     int tickleID = person.getID( );
-    //System.out.println("Person " + ID + " is tickling person " + tickleID);         ADD BACK IN
     refreshLastTickleTime(tickleID);
     person.refreshLastTickleTime(ID);
   }
   
+  /**
+   * Make this person encounter the person passed as an argument, who may
+   * or may not already be friends with them. If they are not already
+   * friends, they have a chance to become so, and may be by the time this
+   * method returns. If they <i>are</i> already friends, their friendship
+   * will be "tickled" (refreshed). */
   public void encounter(int number, Bag pool){
     if(pool.size( ) < number){
       number = pool.size( );
@@ -263,35 +369,43 @@ System.out.println("Student " + ID + " is leaving...");
     }
   }
   
+  /**
+   * Make this person perform one month's actions. These include:
+   * <ol>
+   * <li>Encounter {@link NUM_TO_MEET_GROUP} other people who are members
+   * of one or more of their current groups.</li>
+   * <li>Encounter {@link NUM_TO_MEET_POP} other people from the student
+   * body at large (who may or may not be members of their current
+   * groups.)</li>
+   * <li>Decay this user's existing friendships to reflect the passage of
+   * time.</li>
+   * </ol>
+   * After this, the Person reschedules itself for the next month (or
+   * August, if it's coming up on summertime.)
+   * <p>Note that Persons only step during academic months.</p>
+   */
   public void step(SimState state){
     //Get a bag of all the people in the groups
     Bag groupBag = getPeopleInGroups( );
     encounter(NUM_TO_MEET_GROUP, groupBag);
     //Get a bag of all the people and then encounter some number of those people
-    Bag peopleBag = Sim.instance( ).people.getAllNodes( );
+    Bag peopleBag = people.getAllNodes( );
     encounter(NUM_TO_MEET_POP, peopleBag);
 
 
-//NOTE: Decay only matters if the people are friends- you can't decay a friendship that
-//doesn't exist.
-//So, the time they last met only matters if they are friends already or if they
-//become friends this turn
-//If they aren't already friends and if they don't become friends this turn, then -1 for last met is
-//fine
-//(unless we implement something where if two people meet enough times, they become friends by brute
-//force)
-    
+    //NOTE: Decay only matters if the people are friends- you can't decay a
+    //friendship that doesn't exist. So, the time they last met only
+    //matters if they are friends already or if they become friends this
+    //turn If they aren't already friends and if they don't become
+    //friends this turn, then -1 for last met is fine (unless we
+    //implement something where if two people meet enough times, they
+    //become friends by brute force)
     
     //Now we want to see if any of the friendships have decayed
     decay( );
     
-//    System.out.println(ID + " last tickled:");
-//    for(int i=0; i<lastTickleTime.size( ); i++){
-//      System.out.println(i + " " + lastTickleTime.get(i));
-//    }
-    
-    
-    //If we've done the maximum number of iterations, then stop; otherwise, keep stepping
+    //If we've done the maximum number of iterations, then stop; otherwise, 
+    //keep stepping
     if(numTimes >= Sim.MAX_ITER){
     }else{
             if (Sim.instance().nextMonthInAcademicYear()) {
@@ -307,29 +421,29 @@ System.out.println("Student " + ID + " is leaving...");
     numTimes++;
   }
 
-public void printToFile(){
+    /**
+     * Output diagnostic and statistical information about this Person to
+     * the writer passed.
+     */
+    public void printToFile(BufferedWriter writer) {
         String message = Integer.toString(ID) + " ";
-          Bag b = Sim.instance( ).people.getEdgesIn(this);
-          int numFriends = 0;
-          for (int i=0; i<b.size(); i++) {
-              numFriends++;
-          }
-          message = message + Integer.toString(numFriends) + " "
-              + Integer.toString(groups.size( )) + " " + race + " " + gender + " "
-              + willingnessToJoinGroups +  " " + year + "\n";
-          //Edit this try?
-          try {
-        Sim.outWriter.write(message);
-        System.out.println("here");
-      } catch (IOException e) {
-        e.printStackTrace();
-        System.out.println("bad");
-      }
-      System.out.println(this);
-}
+        Bag b = people.getEdgesIn(this);
+        int numFriends = 0;
+        for (int i=0; i<b.size(); i++) {
+            numFriends++;
+        }
+        message = message + Integer.toString(numFriends) + " "
+            + Integer.toString(groups.size( )) + " " + race + " " + gender + " "
+            + willingnessToJoinGroups +  " " + year + "\n";
+        try {
+            writer.write(message);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
-    public boolean friendsWith(Person other) {
-      Bag b = Sim.instance( ).people.getEdgesIn(this);
+    private boolean friendsWith(Person other) {
+      Bag b = people.getEdgesIn(this);
         for (int i=0; i<b.size(); i++) {
             Person otherSideOfThisEdge = 
                 (Person) ((Edge)b.get(i)).getOtherNode(this);
@@ -340,7 +454,7 @@ public void printToFile(){
         return false;
     }
     
-    public boolean met(Person other){
+    private boolean met(Person other){
       int otherID = other.getID( );
       if(lastTickleTime.get(otherID) == -1){
         return false;
@@ -349,9 +463,16 @@ public void printToFile(){
       }
     }
 
+    /**
+     * Add the person passed to the global network of people (static
+     * method). */
+    public static void addPerson(Person p) {
+        people.addNode(p);
+    }
+
     public String toString() {
         String retval = "Person " + ID + " (friends with ";
-        Bag b = Sim.instance().people.getEdgesIn(this);
+        Bag b = people.getEdgesIn(this);
         for (int i=0; i<b.size(); i++) {
             retval += ((Person)(((Edge)b.get(i)).getOtherNode(this))).ID;
             if (i == b.size()-1) {
@@ -402,12 +523,8 @@ public void printToFile(){
         // even it out by removing one.
     }
 
-    /**
-     * Return a number from 0 to 1 based on how similar the passed Person
-     * is to this Person.
-     */
-    
-    private int attrCounter(int num, ArrayList<Boolean> attr1, ArrayList<Boolean> attr2){
+    private int attrCounter(int num, ArrayList<Boolean> attr1, 
+        ArrayList<Boolean> attr2){
       int count = 0;
       for(int i=0; i<num; i++){
         //if they have the same boolean value for an attribute
@@ -419,7 +536,8 @@ public void printToFile(){
       return count;
     }
     
-    private int attrCounter(int num, ArrayList<Double> attr1, ArrayList<Double> attr2, double interval){
+    private int attrCounter(int num, ArrayList<Double> attr1, 
+        ArrayList<Double> attr2, double interval){
       int count = 0;
       for(int i=0; i<num; i++){
         double difference = attr1.get(i) - attr2.get(i);
@@ -433,19 +551,25 @@ public void printToFile(){
       return count;
     }
     
+    /**
+     * Returns a number between 0 and 1 indicating how similar this person
+     * is perceived to be to the person passed. (1 = perfect similarity.) */
     public double similarityTo(Person other) {
       double similar = 0.0;
       
       //Kind 1: Constant
-      int constantCount = attrCounter(NUM_CONSTANT_ATTRIBUTES, attributesK1, other.attributesK1);
+      int constantCount = attrCounter(CONSTANT_ATTRIBUTE_POOL, attributesK1, 
+        other.attributesK1);
       
       //Kind 2: Independent
-      int indepCount = attrCounter(INDEPENDENT_ATTRIBUTE_POOL, attributesK2, other.attributesK2, INDEPENDENT_INTERVAL);
+      int indepCount = attrCounter(INDEPENDENT_ATTRIBUTE_POOL, attributesK2, 
+        other.attributesK2, INDEPENDENT_INTERVAL);
       
       //Kind 3: Dependent
       ArrayList<Double> normalK3This = normalize(attributesK3);
       ArrayList<Double> normalK3Other = normalize(other.attributesK3);
-      int depCount = attrCounter(DEPENDENT_ATTRIBUTE_POOL, normalK3This, normalK3Other, DEPENDENT_INTERVAL);
+      int depCount = attrCounter(DEPENDENT_ATTRIBUTE_POOL, normalK3This, 
+        normalK3Other, DEPENDENT_INTERVAL);
       
         //Do they have the same race?
         int raceCount = 0;
@@ -457,20 +581,22 @@ public void printToFile(){
         if(gender == other.gender){
           genCount = 1;
         }
-        //Calculate their similarity rating, taking importance of each category (the weight) into account
+        //Calculate their similarity rating, taking importance of each 
+        //category (the weight) into account
       similar = (constantCount * CONST_WEIGHT) + (indepCount * INDEP_WEIGHT)
-          + (depCount * DEP_WEIGHT) + (raceCount * RACE_WEIGHT) + (genCount * GEN_WEIGHT);
-      double maxRating = (NUM_CONSTANT_ATTRIBUTES * CONST_WEIGHT) + (INDEPENDENT_ATTRIBUTE_POOL * INDEP_WEIGHT)
-        + (DEPENDENT_ATTRIBUTE_POOL * DEP_WEIGHT) + RACE_WEIGHT + GEN_WEIGHT;
-      double similarities = similar / maxRating;
-    return similarities;
+          + (depCount * DEP_WEIGHT) + (raceCount * RACE_WEIGHT) 
+          + (genCount * GEN_WEIGHT);
+      double maxRating = (CONSTANT_ATTRIBUTE_POOL * CONST_WEIGHT) 
+          + (INDEPENDENT_ATTRIBUTE_POOL * INDEP_WEIGHT)
+          + (DEPENDENT_ATTRIBUTE_POOL * DEP_WEIGHT) + RACE_WEIGHT + GEN_WEIGHT;
+      double similarity = similar / maxRating;
+    return similarity;
     }
     
-  public boolean areFriends(double similarities){
-    double acceptProb = FRIENDSHIP_COEFFICIENT * similarities + FRIENDSHIP_INTERCEPT;
-//    System.out.println("accept prob y=mx + b " + acceptProb);
+  private boolean areFriends(double similarity){
+    double acceptProb = 
+        FRIENDSHIP_COEFFICIENT * similarity + FRIENDSHIP_INTERCEPT;
     double friendProb = generator.nextDouble( );
-//    System.out.println("friend prob " + friendProb);
     if(friendProb <= acceptProb){
       return true;
     }else{
@@ -479,8 +605,8 @@ public void printToFile(){
   }
   
   private ArrayList<Double> normalize(ArrayList<Double> attr){
-    ArrayList<Double> normal
-      = new ArrayList<Double>(Collections.nCopies(DEPENDENT_ATTRIBUTE_POOL, 0.0));
+    ArrayList<Double> normal = new ArrayList<Double>(
+        Collections.nCopies(DEPENDENT_ATTRIBUTE_POOL, 0.0));
     double sum = 0.0;
     for(int i=0; i<DEPENDENT_ATTRIBUTE_POOL; i++){
         sum = sum + attr.get(i);
@@ -492,20 +618,35 @@ public void printToFile(){
     return normal;
   }
   
+  /** Returns a list of doubles, one for each of the {@link
+   * DEPENDENT_ATTRIBUTE_POOL} possible dep attributes. This will indicate
+   * the degree to which the person possesses each of those attributes (0 =
+   * does not have that attribute at all.) */
   public ArrayList<Double> getDependentAttributes(){
     return normalize(attributesK3);
   }
   
+  /** Returns a list of doubles, one for each of the {@link
+   * INDEPENDENT_ATTRIBUTE_POOL} possible indep attributes. This will *
+   * indicate the degree to which the person possesses each of those
+   * attributes (0 = does not have that attribute at all.) */
   public ArrayList<Double> getIndependentAttributes(){
     return attributesK2;
   }
 
+  /** Sets the value of the independent attribute whose index is passed to
+   * the value passed. */
   public void setIndAttrValue(int index, double val){
     attributesK2.set(index, val);
   }
 
+  /** Sets the value of the dependent attribute whose index is passed to
+   * the value passed. Internally, this may have the side effect of
+   * adjusting the values of the other dependent attributes so that their
+   * normalized sum continues to equal 1. */
   public void setDepAttrValue(int index, double val){
-    //this functions says I want the normalized value of attribute index to be val
+    //this functions says I want the normalized value of attribute index 
+    // to be val
     double sum = 0.0;
     //Take the sum of all of the other non-normalized values
     for(int i=0; i<DEPENDENT_ATTRIBUTE_POOL; i++){
@@ -536,6 +677,9 @@ public void printToFile(){
 //    return groupmates;
 //  }
   
+  /**
+   * FIX: Is this essentially just "get a bag of all the people who are in
+   * one or more of this person's groups"? */
   public Bag getPeopleInGroups( ){
     Bag groupmates = new Bag( );
     boolean addPerson;
@@ -563,7 +707,11 @@ public void printToFile(){
     return groupmates;
   }
 
-  public void leaveGroup(Group g){
+    /** Marks this Person as no longer being a member of the Group passed.
+     * Should <i>not</i> be called in isolation, else the Group object will
+     * still think the Person is a member! See {@link Person#leaveGroup}.
+     */
+  void leaveGroup(Group g){
     for(int x = 0; x<groups.size(); x++){
       if(groups.get(x).equals(g)){
         groups.remove(x);
@@ -575,20 +723,24 @@ public void printToFile(){
     return(ID==p.getID());
   }
 
+    /** Sets the school year (1=freshman, 2=sophomore, etc.) of this
+     * Person. No validation checking is performed. */
   public void setYear(int x){
     year = x;
   }
 
+    /** Gets the school year (1=freshman, 2=sophomore, etc.) of this
+     * Person.  */
   public int getYear(){
     return year;
   }
 
+    /** Increments the school year (1=freshman, 2=sophomore, etc.) of this
+     * Person, possibly to 5 or higher (no validation checking is
+     * performed). */
   public void incrementYear(){
     year++;
   }
 
 
 }
-
-
-
