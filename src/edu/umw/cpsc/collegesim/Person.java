@@ -622,8 +622,8 @@ public class Person implements Steppable{
   
   /** Returns a list of doubles, one for each of the {@link
    * #DEPENDENT_ATTRIBUTE_POOL} possible dep attributes. This will indicate
-   * the degree to which the person possesses each of those attributes (0 =
-   * does not have that attribute at all.) */
+   * the degree to which the person possesses each of those attributes (0.0
+   * = does not have that attribute at all.) */
   public ArrayList<Double> getDependentAttributes(){
     return normalize(attributesK3);
   }
