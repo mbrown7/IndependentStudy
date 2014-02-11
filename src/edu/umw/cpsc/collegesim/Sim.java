@@ -181,7 +181,7 @@ public class Sim extends SimState implements Steppable{
         }
         //if((int)(schedule.getTime()/NUM_MONTHS_IN_YEAR)!=NUM_SIMULATION_YEARS){
         if(!isEndOfSim()) {
-            String f="year"+(int) (schedule.getTime()/NUM_MONTHS_IN_YEAR);
+            String f="year"+(int) (schedule.getTime()/NUM_MONTHS_IN_YEAR)+".txt";
             try{
                 outF = new File(f);
                 outF.createNewFile( );
@@ -256,17 +256,27 @@ public class Sim extends SimState implements Steppable{
 
                 dumpToFiles();
 				if(!isEndOfSim()) {
+					//For all of the people
 					for(int x = 0; x<peopleList.size(); x++){
-						if(peopleList.get(x).getYear()>=4){
+						Person student = peopleList.get(x);
+						//If they have more than four years, they graduate
+						if(student.getYear( ) >= 4){
 							System.out.println("Person " + 
-                                peopleList.get(x).getID() +
+                                student.getID() +
                                 " has graduated! Congrats!");
-							toRemove.add(peopleList.get(x));
-						}else if(random.nextDouble()<=DROPOUT_RATE){
-							System.out.println("Person " +
-                                peopleList.get(x).getID() +
-                                " has dropped out of school.");
-							toRemove.add(peopleList.get(x));
+							toRemove.add(student);
+						//Otherwise
+						}else{
+							boolean isAlienated = student.getAlienation( );
+							//If they feel alienated, they have a chance to drop out
+							if(isAlienated){
+								double dropChance = random.nextDouble( );
+								if(dropChance <= DROPOUT_RATE){
+									System.out.println("Person " + student.getID( ) +
+											" has dropped out of school.");
+									toRemove.add(student);
+								}
+							}
 						}
 					}
 					for(int x = 0; x<groups.size(); x++){
