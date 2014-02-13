@@ -46,8 +46,8 @@ public class Sim extends SimState implements Steppable{
      * equation to transform alienation to probability of
      * dropping out. If x is based on the alienation level,
      * then y=mx+b, where m is the DROPOUT_RATE and b the
-     * DROPOUT_INTERCEPT gives the probability of feeling alienated. */
-    public static final double DROPOUT_RATE = 0.1;
+     * DROPOUT_INTERCEPT, gives the probability of dropping out. */
+    public static final double DROPOUT_RATE = 0.01;
     
     /** See {@link #DROPOUT_RATE}. */
     public static final double DROPOUT_INTERCEPT = 0.05;
@@ -73,6 +73,8 @@ public class Sim extends SimState implements Steppable{
 
     private static File outF;
 	private static BufferedWriter outWriter;
+	private static File FoutF;
+	private static BufferedWriter FoutWriter;
 	
 	//Platypus do we need these?
 	private static int currentStudentID = 0;
@@ -184,9 +186,16 @@ public class Sim extends SimState implements Steppable{
                 System.out.println("Could not close file");
             }
         }
+        if(FoutWriter!=null){
+            try{
+                FoutWriter.close();
+            }catch(IOException e){
+                System.out.println("Could not close file");
+            }
+        }
         //if((int)(schedule.getTime()/NUM_MONTHS_IN_YEAR)!=NUM_SIMULATION_YEARS){
         if(!isEndOfSim()) {
-            String f="year"+(int) (schedule.getTime()/NUM_MONTHS_IN_YEAR)+".txt";
+            String f="year"+(int) (schedule.getTime()/NUM_MONTHS_IN_YEAR)+".csv";
             try{
                 outF = new File(f);
                 outF.createNewFile( );
@@ -200,6 +209,21 @@ public class Sim extends SimState implements Steppable{
             //We can probably leave this but just rewrite the print file for person
             for(int x = 0; x<peopleList.size(); x++){
                 peopleList.get(x).printToFile(outWriter);
+            }
+            
+            //FILE OF FRIENDSHIPS
+            String ff="edges"+(int) (schedule.getTime()/NUM_MONTHS_IN_YEAR)+".csv";
+            try{
+                FoutF = new File(ff);
+                FoutF.createNewFile( );
+                FoutWriter = new BufferedWriter(new FileWriter(FoutF));
+            }catch(IOException e){
+                System.out.println("Couldn't create file");
+                e.printStackTrace();
+                System.exit(1);
+            }
+            for(int x = 0; x<peopleList.size(); x++){
+                peopleList.get(x).printFriendsToFile(FoutWriter);
             }
         }
     }

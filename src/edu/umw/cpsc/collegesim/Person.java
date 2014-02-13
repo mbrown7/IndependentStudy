@@ -423,19 +423,38 @@ public class Person implements Steppable{
      * the writer passed.
      */
     public void printToFile(BufferedWriter writer) {
-        String message = Integer.toString(ID) + " ";
+        String message = Integer.toString(ID) + ",";
         Bag b = Sim.peopleGraph.getEdgesIn(this);
-        int numFriends = 0;
-        for (int i=0; i<b.size(); i++) {
-            numFriends++;
-        }
-        message = message + Integer.toString(numFriends) + " "
-            + Integer.toString(groups.size( )) + " " + race + " " + gender + " "
-            + extroversion +  " " + year + "\n";
+        int numFriends = b.size( );
+        message = message + Integer.toString(numFriends) + ","
+            + Integer.toString(groups.size( )) + "," + race + "," + gender + ","
+            + extroversion +  "," + year + "\n";
         try {
             writer.write(message);
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+    
+    /**
+     * Output friendship information.
+     */
+    public void printFriendsToFile(BufferedWriter writer) {
+        String message = "";
+        Bag b = Sim.peopleGraph.getEdgesIn(this);
+        for (int i=0; i<b.size( ); i++) {
+        	Person friend = (Person) ((Edge)b.get(i)).getOtherNode(this);
+        	//We only document the friendship if the other person's ID is greater
+        	//otherwise, the friendship edge was already documented
+        	message = message + this.getID( ) + "," + friend.getID( ) + "\n";
+        }
+        //We'll only try to write if there are actually friends
+        if(b.size( ) > 0){
+        	try {
+        		writer.write(message);
+        	} catch (Exception e) {
+        		e.printStackTrace();
+        	}
         }
     }
 
@@ -621,12 +640,17 @@ public class Person implements Steppable{
 	  Bag bIn = Sim.peopleGraph.getEdgesIn(this);
 	  int numFriends = bIn.size( );
 	  //Find the percent of the population with which this person is friends
-	  int totalPeople = Sim.getNumPeople( );
-	  int percFriends = numFriends / totalPeople;
+	  //int totalPeople = Sim.getNumPeople( );
+	  //Platypus
+	  double requiredNumFriends = 3.0;
+	  double percFriends = numFriends / requiredNumFriends;
 	  //As extroversion increases, the likelihood to feel alienated increases
 	  //As the percent of friends you have in the population increases, the likelihood
 	  //to feel alienated decreases
 	  double alienationFactor = extroversion / percFriends;
+	  if(alienationFactor > 1){
+		  alienationFactor = 1;
+	  }
 	  return alienationFactor;
   }
   
