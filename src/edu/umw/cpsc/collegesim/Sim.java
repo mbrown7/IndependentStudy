@@ -41,11 +41,16 @@ public class Sim extends SimState implements Steppable{
      * The number of groups, with random initial membership, that the
      * simulation will begin with. */
 	public static final int NUM_GROUPS_ADDED_EACH_YEAR = 10;
-
-
-    /**
-     * The per-year probability of each student dropping out of college. */
-	public static final double DROPOUT_RATE = .02;
+	
+    /** The coefficient (see also {@link #DROPOUT_INTERCEPT}) of a linear
+     * equation to transform alienation to probability of
+     * dropping out. If x is based on the alienation level,
+     * then y=mx+b, where m is the DROPOUT_RATE and b the
+     * DROPOUT_INTERCEPT gives the probability of feeling alienated. */
+    public static final double DROPOUT_RATE = 0.1;
+    
+    /** See {@link #DROPOUT_RATE}. */
+    public static final double DROPOUT_INTERCEPT = 0.05;
 
 	private static ArrayList<Group> groups = new ArrayList<Group>();
 	
@@ -267,15 +272,14 @@ public class Sim extends SimState implements Steppable{
 							toRemove.add(student);
 						//Otherwise
 						}else{
-							boolean isAlienated = student.getAlienation( );
+							double alienationLevel = student.getAlienation( );
+							double alienation = DROPOUT_RATE * alienationLevel + DROPOUT_INTERCEPT; 
 							//If they feel alienated, they have a chance to drop out
-							if(isAlienated){
-								double dropChance = random.nextDouble( );
-								if(dropChance <= DROPOUT_RATE){
-									System.out.println("Person " + student.getID( ) +
-											" has dropped out of school.");
-									toRemove.add(student);
-								}
+							double dropChance = random.nextDouble( );
+							if(dropChance <= alienation){
+								System.out.println("Person " + student.getID( ) +
+										" has dropped out of school.");
+								toRemove.add(student);
 							}
 						}
 					}

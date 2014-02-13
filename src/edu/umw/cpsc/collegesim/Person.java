@@ -78,16 +78,6 @@ public class Person implements Steppable{
 
     /** See {@link #FRIENDSHIP_COEFFICIENT}. */
     public static final double FRIENDSHIP_INTERCEPT = .2;
-    
-    /** The coefficient (see also {@link #ALIENATION_INTERCEPT}) of a linear
-     * equation to transform extroversion to probability of
-     * feeling alienated. If x is based on the extroversion and number of friends,
-     * then y=mx+b, where m is the ALIENATION_COEFFICIENT and b the
-     * ALIENATION_INTERCEPT gives the probability of feeling alienated. */
-    public static final double ALIENATION_COEFFICIENT = 0.2;
-    
-    /** See {@link #ALIENATION_COEFFICIENT}. */
-    public static final double ALIENATION_INTERCEPT = 0.05;
   
     /** Each time step (= 1 month), how many other people from a person's 
      * groups that person will encounter. Note that this number is only
@@ -626,7 +616,7 @@ public class Person implements Steppable{
   }
   
   
-  public boolean getAlienation( ){
+  public double getAlienation( ){
 	  //Get the number of friends this person has
 	  Bag bIn = Sim.peopleGraph.getEdgesIn(this);
 	  int numFriends = bIn.size( );
@@ -637,18 +627,7 @@ public class Person implements Steppable{
 	  //As the percent of friends you have in the population increases, the likelihood
 	  //to feel alienated decreases
 	  double alienationFactor = extroversion / percFriends;
-	  double likelihoodToFeelAlienated = ALIENATION_COEFFICIENT * alienationFactor
-			  + ALIENATION_INTERCEPT;
-	  //If you are below the likelihood to feel alienated, then you are alienated
-	  //Platypus
-	  //Right now, it is possible for the likelihood to feel alienated to exceed 1
-	  //This probably isn't great code but it does the job at the moment
-	  double r = generator.nextDouble( );
-	  if(r <= likelihoodToFeelAlienated){
-		  return true;
-	  }else{
-		  return false;
-	  }
+	  return alienationFactor;
   }
   
   
