@@ -1,7 +1,11 @@
 
+library(igraph)
+
 #MAKE SURE YOU CHOOSE AN EDGE FILE
+cat("Enter an edge file name:\n")
 edf = read.table(file.choose( ),sep=",",stringsAsFactors=FALSE)
 #MAKE SURE YOU CHOOSE THE CORRESPONDING YEAR FILE
+cat("Enter the corresponding year file name:\n")
 vdf = read.table(file.choose( ),sep=",",stringsAsFactors=FALSE)
 
 #Find a list of rows where a friendship is duplicated
