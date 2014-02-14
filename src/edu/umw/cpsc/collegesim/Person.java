@@ -99,7 +99,7 @@ public class Person implements Steppable{
     private static MersenneTwisterFast generator = Sim.instance( ).random;
     private Normal normal = new Normal(.5, .15, generator);
     private static int numTimes = 1;
-    private static int decayThreshold = 4;
+    private static final int DECAY_THRESHOLD = 4;
     
     private Race race;
     private Gender gender;
@@ -205,7 +205,7 @@ public class Person implements Steppable{
             Edge toRemoveOut = null;
             double val = lastTickleTime.get(friendID);
             //if the people last met longer than the threshold ago
-            if(Sim.instance().schedule.getTime() - val > decayThreshold){
+            if(Sim.instance().schedule.getTime() - val > DECAY_THRESHOLD){
               //Get a bag of all the edges into this person
               Bag bIn = people.getEdgesIn(this);
               //for each of these edges
