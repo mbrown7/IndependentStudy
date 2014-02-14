@@ -91,8 +91,7 @@ public class Person implements Steppable{
      * numerous other people when their step() methods run. */
     public static final int NUM_TO_MEET_POP = 1;
 
-    // Undirected graph.
-	private static Network people = new Network(false);
+    
 
     private int ID;
     private int year;
@@ -104,7 +103,7 @@ public class Person implements Steppable{
     private Race race;
     private Gender gender;
     
-    private double willingnessToJoinGroups;
+    private double extroversion;
     private ArrayList<Group> groups;
   
     /** The total number of "constant" attributes in the system. (See {@link
@@ -164,19 +163,13 @@ public class Person implements Steppable{
       = new Hashtable<Integer,Double>();
 
     
-    /** Removes this student from the university, and the simulation, leaving
-     * all groups and deleting it from the student body. */
+    /** Removes this student from the university, forcing them to leave all groups. */
     public void leaveUniversity( ){
-    	//This removes all the friendships this person holds and makes 
-        //them leave all groups
-    	//to be called when the person graduates or drops out
+    	//This removes this person from all of their groups
     	for(int i=0; i<groups.size( ); i++){
     		Group group = groups.get(i);
     		group.removeStudent(this);
     	}
-    	//This SHOULD work to remove this person from the network graph 
-        //AS WELL AS all edges into it and out of it, aka, all friendships
-    	people.removeNode(this);
     }
     
     
@@ -207,7 +200,7 @@ public class Person implements Steppable{
             //if the people last met longer than the threshold ago
             if(Sim.instance().schedule.getTime() - val > DECAY_THRESHOLD){
               //Get a bag of all the edges into this person
-              Bag bIn = people.getEdgesIn(this);
+              Bag bIn = Sim.peopleGraph.getEdgesIn(this);
               //for each of these edges
               for(int j=0; j<bIn.size( ); j++){
                 //look for the person whose ID matches the ID of the 
@@ -223,7 +216,7 @@ public class Person implements Steppable{
                 }
               }
               //Do the same with the other edges
-              Bag bOut = people.getEdgesOut(this);
+              Bag bOut = Sim.peopleGraph.getEdgesOut(this);
               Person otherPerson = null;
               //for each of these edges
               for(int j=0; j<bOut.size( ); j++){
@@ -240,8 +233,10 @@ public class Person implements Steppable{
                   j = bOut.size( );
                 }
               }
-              people.removeEdge(toRemoveIn);
-              people.removeEdge(toRemoveOut);
+              //Platypus
+              //Do we have to do this? Remove the edge in and the edge out?
+              Sim.peopleGraph.removeEdge(toRemoveIn);
+              Sim.peopleGraph.removeEdge(toRemoveOut);
               resetLastTickleTime(friendID);
             }
           }
@@ -313,7 +308,7 @@ public class Person implements Steppable{
         }else{
             gender = Gender.MALE;
         }
-        willingnessToJoinGroups = normal.nextDouble();
+        extroversion = normal.nextDouble();
     }
   
   /**
@@ -331,7 +326,7 @@ public class Person implements Steppable{
     //if they become friends, add their edge to the network
     //and reset when they met
     if(friends){
-        people.addEdge(this, personToMeet, 1);
+        Sim.peopleGraph.addEdge(this, personToMeet, 1);
         refreshLastTickleTime(personToMeetID);
         personToMeet.refreshLastTickleTime(ID);
     }
@@ -391,7 +386,7 @@ public class Person implements Steppable{
     Bag groupBag = getPeopleInGroups( );
     encounter(NUM_TO_MEET_GROUP, groupBag);
     //Get a bag of all the people and then encounter some number of those people
-    Bag peopleBag = people.getAllNodes( );
+    Bag peopleBag = Sim.peopleGraph.getAllNodes( );
     encounter(NUM_TO_MEET_POP, peopleBag);
 
 
@@ -428,24 +423,43 @@ public class Person implements Steppable{
      * the writer passed.
      */
     public void printToFile(BufferedWriter writer) {
-        String message = Integer.toString(ID) + " ";
-        Bag b = people.getEdgesIn(this);
-        int numFriends = 0;
-        for (int i=0; i<b.size(); i++) {
-            numFriends++;
-        }
-        message = message + Integer.toString(numFriends) + " "
-            + Integer.toString(groups.size( )) + " " + race + " " + gender + " "
-            + willingnessToJoinGroups +  " " + year + "\n";
+        String message = Integer.toString(ID) + ",";
+        Bag b = Sim.peopleGraph.getEdgesIn(this);
+        int numFriends = b.size( );
+        message = message + Integer.toString(numFriends) + ","
+            + Integer.toString(groups.size( )) + "," + race + "," + gender + ","
+            + extroversion +  "," + year + "\n";
         try {
             writer.write(message);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+    
+    /**
+     * Output friendship information.
+     */
+    public void printFriendsToFile(BufferedWriter writer) {
+        String message = "";
+        Bag b = Sim.peopleGraph.getEdgesIn(this);
+        for (int i=0; i<b.size( ); i++) {
+        	Person friend = (Person) ((Edge)b.get(i)).getOtherNode(this);
+        	//We only document the friendship if the other person's ID is greater
+        	//otherwise, the friendship edge was already documented
+        	message = message + this.getID( ) + "," + friend.getID( ) + "\n";
+        }
+        //We'll only try to write if there are actually friends
+        if(b.size( ) > 0){
+        	try {
+        		writer.write(message);
+        	} catch (Exception e) {
+        		e.printStackTrace();
+        	}
+        }
+    }
 
     private boolean friendsWith(Person other) {
-      Bag b = people.getEdgesIn(this);
+      Bag b = Sim.peopleGraph.getEdgesIn(this);
         for (int i=0; i<b.size(); i++) {
             Person otherSideOfThisEdge = 
                 (Person) ((Edge)b.get(i)).getOtherNode(this);
@@ -469,12 +483,12 @@ public class Person implements Steppable{
      * Add the person passed to the global network of people (static
      * method). */
     public static void addPerson(Person p) {
-        people.addNode(p);
+        Sim.peopleGraph.addNode(p);
     }
 
     public String toString() {
         String retval = "Person " + ID + " (friends with ";
-        Bag b = people.getEdgesIn(this);
+        Bag b = Sim.peopleGraph.getEdgesIn(this);
         for (int i=0; i<b.size(); i++) {
             retval += ((Person)(((Edge)b.get(i)).getOtherNode(this))).ID;
             if (i == b.size()-1) {
@@ -498,8 +512,8 @@ public class Person implements Steppable{
 	  return gender;
   }
  
-  double getWillingnessToJoinGroups( ){
-    return willingnessToJoinGroups;
+  double getExtroversion( ){
+    return extroversion;
   }
   
   void joinGroup(Group group){
@@ -515,7 +529,7 @@ public class Person implements Steppable{
     return false;
   }
     
-  /**
+    /**
      * Based on the possible presence of popular attributes possessed by
      * the Group's members, possibly absorb one or more of these attributes
      * into this Person, if he/she does not already have them.
@@ -619,6 +633,27 @@ public class Person implements Steppable{
       }
     return normal;
   }
+  
+  
+  public double getAlienation( ){
+	  //Get the number of friends this person has
+	  Bag bIn = Sim.peopleGraph.getEdgesIn(this);
+	  int numFriends = bIn.size( );
+	  //Find the percent of the population with which this person is friends
+	  //int totalPeople = Sim.getNumPeople( );
+	  //Platypus
+	  double requiredNumFriends = 3.0;
+	  double percFriends = numFriends / requiredNumFriends;
+	  //As extroversion increases, the likelihood to feel alienated increases
+	  //As the percent of friends you have in the population increases, the likelihood
+	  //to feel alienated decreases
+	  double alienationFactor = extroversion / percFriends;
+	  if(alienationFactor > 1){
+		  alienationFactor = 1;
+	  }
+	  return alienationFactor;
+  }
+  
   
   /** Returns a list of doubles, one for each of the {@link
    * #DEPENDENT_ATTRIBUTE_POOL} possible dep attributes. This will indicate
