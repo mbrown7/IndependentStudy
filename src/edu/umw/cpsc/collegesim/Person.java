@@ -437,6 +437,7 @@ public class Person implements Steppable{
         message = message + Integer.toString(numFriends) + " "
             + Integer.toString(groups.size( )) + " " + race + " " + gender + " "
             + willingnessToJoinGroups +  " " + year + "\n";
+            message=message+toString()+"\n";
         try {
             writer.write(message);
         } catch (Exception e) {

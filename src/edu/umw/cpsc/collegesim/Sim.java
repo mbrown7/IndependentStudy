@@ -164,6 +164,7 @@ public class Sim extends SimState implements Steppable{
             }
             for(int x = 0; x<peopleList.size(); x++){
                 peopleList.get(x).printToFile(outWriter);
+                peopleList.get(x).toString();
             }
         }
     }
