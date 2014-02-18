@@ -126,8 +126,8 @@ public class Group implements Steppable{
 
           //FIX FOR DECIMALS
             double r = (affinityTo(s) + recruitmentFactor + 
-                s.getWillingnessToJoinGroups()*2 + rand.nextDouble()*2)/6.0; 
-                //want to mess with balence here
+                s.getExtroversion()*2 + rand.nextDouble()*2)/6.0; 
+                //want to mess with balance here
             if(r>RECRUITMENT_REQUIRED){
                 students.add(s);
                 s.joinGroup(this);
