@@ -94,7 +94,7 @@ public class Sim extends SimState implements Steppable{
         return (monthsWithinYear < NUM_MONTHS_IN_ACADEMIC_YEAR);
     }
 
-    //Platypus
+    //Giraffe
     public static int getNumPeople( ){
     	return peopleList.size();
     }
@@ -129,10 +129,11 @@ public class Sim extends SimState implements Steppable{
         FoutF.delete();
         */
 		for(int i=0; i<INIT_NUM_PEOPLE; i++){
-			//Create a new student with the desired student ID.
-			//Here, currentStudentID and i will be identical. But we want to increment
-			//currentStudentID so we can use it later as the years go on, when the
-			//number of students and the assignment of IDs will no longer match the iterator (i)
+            //Create a new student with the desired student ID. Here,
+            //currentStudentID and i will be identical. But we want to
+            //increment currentStudentID so we can use it later as the
+            //years go on, when the number of students and the assignment
+            //of IDs will no longer match the iterator (i)
 			Person person = new Person(currentStudentID);
 			currentStudentID++;
 			//Give them a random year
@@ -167,7 +168,8 @@ public class Sim extends SimState implements Steppable{
 	public static void main(String[] args) throws IOException {
         doLoop(new MakesSimState() { 
             public SimState newInstance(long seed, String[] args) {
-                Sim.SEED = seed;
+// For now, let's just use SEED as defined above every time.
+// Sim.SEED = seed;
                 return instance();
             }
             public Class simulationClass() {
@@ -180,7 +182,7 @@ public class Sim extends SimState implements Steppable{
         return (schedule.getTime()/NUM_MONTHS_IN_YEAR) > NUM_SIMULATION_YEARS;
     }
 
-    private int getCurrYearNum() {
+    int getCurrYearNum() {
         return (int) schedule.getTime()/NUM_MONTHS_IN_YEAR;
     }
 
@@ -282,6 +284,7 @@ public class Sim extends SimState implements Steppable{
 
 	public void step(SimState state){
 
+System.out.println("Sim::step(). The clock is now " + schedule.getTime());
 		if(!isEndOfSim()) {
 
 			if(nextMonthInAcademicYear()){
@@ -292,6 +295,18 @@ public class Sim extends SimState implements Steppable{
                  */
                 System.out.println("---------------");
                 System.out.println("Starting year: "+getCurrYearNum());
+Bag b = peopleGraph.getAllNodes();
+boolean itIsInThere = false;
+for (int i=0; i<b.size(); i++) {
+    if (((Person)b.get(i)).getID() == 92) {
+        itIsInThere = true;
+    }
+}
+if (itIsInThere) {
+System.out.println("At start of year, 92 is IN the graph.");
+} else {
+System.out.println("At start of year, 92 is NOT in the graph.");
+}
 				for(int x = 0; x<peopleList.size(); x++){
 					//Platypus
 					//Is this something we need to track in the graph?
@@ -307,7 +322,10 @@ public class Sim extends SimState implements Steppable{
 					peopleList.add(person);
 					peopleGraph.addNode(person);
 					//Schedule the person
-					schedule.scheduleOnceIn(1.5, person);
+					//Why 1.4? Because (1) we the Sim are running at int.1,
+					//and (2) (Morgan and Stephen are too tired to figure
+					//out the second part.)
+					schedule.scheduleOnceIn(1.4, person);
 				}
 				for(int x = 0; x<NUM_GROUPS_ADDED_EACH_YEAR; x++){
 					//Create a new group with the list of people
@@ -377,8 +395,13 @@ public class Sim extends SimState implements Steppable{
 						toRemove.get(x).leaveUniversity();
 						//remove the person from the list of people
 						peopleList.remove(toRemove.get(x));
+
+
 						//remove the person from the graph of people and friendships
 						peopleGraph.removeNode(toRemove.get(x));
+if (toRemove.get(x).getID() == 92) {
+System.out.println("I just removed 92!");
+}
 					}
 					toRemoveGroups.clear();
 					toRemove.clear();
@@ -388,6 +411,18 @@ public class Sim extends SimState implements Steppable{
                  * Schedule myself to wake up in August.
                  */
 				schedule.scheduleOnceIn(NUM_MONTHS_IN_SUMMER, this);
+Bag b = peopleGraph.getAllNodes();
+boolean itIsInThere = false;
+for (int i=0; i<b.size(); i++) {
+    if (((Person)b.get(i)).getID() == 92) {
+        itIsInThere = true;
+    }
+}
+if (itIsInThere) {
+System.out.println("92 is IN the graph.");
+} else {
+System.out.println("92 is NOT in the graph.");
+}
 			}
 		}else{
 			schedule.seal();

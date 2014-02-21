@@ -343,10 +343,16 @@ public class Person implements Steppable{
     //if they become friends, add their edge to the network
     //and reset when they met
     if(friends){
+if (personToMeet.ID == 92) {
+    System.out.println("Yay! " + ID + " and 92 are friends!");
+}
         Sim.peopleGraph.addEdge(this, personToMeet, 1);
         refreshLastTickleTime(personToMeetID);
         personToMeet.refreshLastTickleTime(ID);
     }
+if (personToMeet.ID == 92 && !friends) {
+    System.out.println("Sad face! " + ID + " and 92 are not friends!");
+}
   }
   
   /**
@@ -361,12 +367,13 @@ public class Person implements Steppable{
   }
   
   /**
+ * THIS COMMENT IS INSANELY OUT OF DATE
    * Make this person encounter the person passed as an argument, who may
    * or may not already be friends with them. If they are not already
    * friends, they have a chance to become so, and may be by the time this
    * method returns. If they <i>are</i> already friends, their friendship
    * will be "tickled" (refreshed). */
-  public void encounter(int number, Bag pool){
+  private void encounter(int number, Bag pool, boolean where){
     if(pool.size( ) < number){
       number = pool.size( );
     }
@@ -375,11 +382,23 @@ public class Person implements Steppable{
       do{
         personToMeet = (Person) pool.get(generator.nextInt(pool.size( )));
       }while(personToMeet == this);
+if (personToMeet.ID == 92) {
+System.out.println("Hey! Person " + ID + " is going to meet 92!");
+}
       if(friendsWith(personToMeet)){
+if (personToMeet.ID == 92) {
+System.out.println("We're going to tickle them...");
+}
         tickle(personToMeet);
       }else{
+if (personToMeet.ID == 92) {
+System.out.println("We're going to meet them...");
+}
         meet(personToMeet);
       }
+if (personToMeet.ID == 92) {
+System.out.println("We're outta here...");
+}
     }
   }
   
@@ -399,12 +418,18 @@ public class Person implements Steppable{
    * <p>Note that Persons only step during academic months.</p>
    */
   public void step(SimState state){
+System.out.println("Person" + ID + "::step(). The clock is now " + Sim.instance().schedule.getTime());
     //Get a bag of all the people in the groups
     Bag groupBag = getPeopleInGroups( );
-    encounter(NUM_TO_MEET_GROUP, groupBag);
+    encounter(NUM_TO_MEET_GROUP, groupBag, true);
     //Get a bag of all the people and then encounter some number of those people
     Bag peopleBag = Sim.peopleGraph.getAllNodes( );
-    encounter(NUM_TO_MEET_POP, peopleBag);
+    if (!peopleBag.contains(this)) {
+        System.out.println("HOLY MOSES I'M ACTUALLY DEAD!!!!");
+        System.out.println("And this is THE LAST you should ever hear from Student #" + ID + ".");
+        return;
+    }
+    encounter(NUM_TO_MEET_POP, peopleBag, false);
 
 
     //NOTE: Decay only matters if the people are friends- you can't decay a
@@ -429,7 +454,7 @@ public class Person implements Steppable{
             } else {
                 // It's summer break! Sleep for the summer.
                 Sim.instance( ).schedule.scheduleOnceIn(
-                    Sim.NUM_MONTHS_IN_SUMMER, this);
+                    Sim.NUM_MONTHS_IN_SUMMER + 1, this);
             }
     }
     numTimes++;
@@ -506,16 +531,12 @@ public class Person implements Steppable{
         }
     }
 
-    /**
-     * Add the person passed to the global network of people (static
-     * method). */
-    public static void addPerson(Person p) {
-        Sim.peopleGraph.addNode(p);
-    }
-
     public String toString() {
-        String retval = "Person " + ID + " (friends with ";
         Bag b = Sim.peopleGraph.getEdgesIn(this);
+        if (b.size() == 0) {
+            return "Person " + ID + " (lonely with no friends)";
+        }
+        String retval = "Person " + ID + " (friends with ";
         for (int i=0; i<b.size(); i++) {
             retval += ((Person)(((Edge)b.get(i)).getOtherNode(this))).ID;
             if (i == b.size()-1) {
@@ -776,17 +797,17 @@ public class Person implements Steppable{
      * still think the Person is a member! See {@link
      * edu.umw.cpsc.collegesim.Group#removeEveryoneFromGroup()}.
      */
-public  void leaveGroup(Group g){
-    for(int x = 0; x<groups.size(); x++){
-      if(groups.get(x).equals(g)){
-        groups.remove(x);
+    public  void leaveGroup(Group g){
+        for(int x = 0; x<groups.size(); x++){
+          if(groups.get(x).equals(g)){
+            groups.remove(x);
+          }
+        }
       }
-    }
-  }
 
-  public boolean equals(Person p){
-    return(ID==p.getID());
-  }
+//   public boolean equals(Person p){
+//     return(ID==p.getID());
+//   }
 
     /** Sets the school year (1=freshman, 2=sophomore, etc.) of this
      * Person. No validation checking is performed. */
