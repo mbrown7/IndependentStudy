@@ -794,6 +794,27 @@ System.out.println("Person" + ID + "::step(). The clock is now " + Sim.instance(
   /**
    * FIX: Is this essentially just "get a bag of all the people who are in
    * one or more of this person's groups"? */
+
+  public Bag getPeopleInGroups( ){
+    boolean repeat = false;
+    Bag groupmates = new Bag();
+    for(int x = 0; x < groups.size( ); x++){
+      for(int y = 0; y < groups.get(x).getSize(); y++){
+        for(int z = 0; z < groupmates.size(); z++){
+          if(groups.get(x).getPersonAtIndex(y).equals(groupmates.get(z))){
+            repeat = true;    //student is already in this bag, don't add again
+          }
+        }
+        if(!repeat){
+          groupmates.add(groups.get(x).getPersonAtIndex(y));
+        }
+        repeat = false;
+      }
+    }
+    return groupmates;
+  }
+
+  /*
   public Bag getPeopleInGroups( ){
     Bag groupmates = new Bag();
     boolean addPerson;
@@ -820,7 +841,7 @@ System.out.println("Person" + ID + "::step(). The clock is now " + Sim.instance(
     }
     return groupmates;
   }
-
+*/
     /** Marks this Person as no longer being a member of the Group passed.
      * Should <i>not</i> be called in isolation, else the Group object will
      * still think the Person is a member! See {@link
