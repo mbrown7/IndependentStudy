@@ -382,7 +382,7 @@ if (personToMeet.ID == 92 && !friends) {
       Person personToMeet;
       do{
         personToMeet = (Person) pool.get(generator.nextInt(pool.size( )));
-      }while(personToMeet == this);
+      }while(personToMeet.ID == ID);
 if (personToMeet.ID == 92) {
 System.out.println("Hey! Person " + ID + " is going to meet 92!");
 }
@@ -506,7 +506,7 @@ System.out.println("Person" + ID + "::step(). The clock is now " + Sim.instance(
         for (int i=0; i<b.size(); i++) {
             Person otherSideOfThisEdge = 
                 (Person) ((Edge)b.get(i)).getOtherNode(this);
-            if (other == otherSideOfThisEdge) {
+            if (other.ID == otherSideOfThisEdge.ID) {
                 return true;
             }
         }
