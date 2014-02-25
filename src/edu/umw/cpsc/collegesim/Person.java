@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Enumeration;
 import sim.util.distribution.Normal;
+import java.lang.Math;
 
 import sim.engine.*;
 import sim.util.*;
@@ -522,8 +523,36 @@ System.out.println("Person" + ID + "::step(). The clock is now " + Sim.instance(
     }
 
     public void printPreferencesToFile(BufferedWriter writer) {
+        String message = this.getID( ) + ":\nConstant: " + attributesK1 + "\nK2Year0: " + attributesK2Year0 + "\nK3Year0: " + attributesK3Year0 + "\nK2Year1: " + attributesK2Year1 + "\nK3Year1: " + attributesK3Year1 + "\nK2Year2: " + attributesK2Year2 + "\nK3Year2: " + attributesK3Year2 + "\nK2Year3: " + attributesK2Year3 + "\nK3Year3: " + attributesK3Year3 + "\nK2Year4: " + attributesK2 + "\nK3Year4: " + attributesK3 + "\n";
+        try {
+          writer.write(message);
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
+    }
+
+    public void printIndependentToFile(BufferedWriter writer) {
+        double average=0;
         String message = "";
-        message = message + this.getID( ) + ":\nConstant: " + attributesK1 + "\nK2Year0: " + attributesK2Year0 + "\nK3Year0: " + attributesK3Year0 + "\nK2Year1: " + attributesK2Year1 + "\nK3Year1: " + attributesK3Year1 + "\nK2Year2: " + attributesK2Year2 + "\nK3Year2: " + attributesK3Year2 + "\nK2Year3: " + attributesK2Year3 + "\nK3Year3: " + attributesK3Year3 + "\nK2Year4: " + attributesK2 + "\nK3Year4: " + attributesK3 + "\n";
+        for(int x = 0; x < NUM_INDEPENDENT_ATTRIBUTES; x++){
+          average += Math.abs(attributesK2.get(x) - attributesK2Year0.get(x));
+        }
+        average=average/NUM_INDEPENDENT_ATTRIBUTES;
+        message = message + getID() + " " + Sim.peopleGraph.getEdgesIn(this).size() + " " + groups.size() + " " + average + "\n";
+        try {
+          writer.write(message);
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
+    }
+
+    public void printDependentToFile(BufferedWriter writer) {
+        double average=0;
+        for(int x = 0; x < NUM_DEPENDENT_ATTRIBUTES; x++){
+          average += Math.abs(attributesK3.get(x) - attributesK3Year0.get(x));
+        }
+        average=average/NUM_DEPENDENT_ATTRIBUTES;
+        String message = getID() + " " + Sim.peopleGraph.getEdgesIn(this).size() + " " + groups.size() + " " + average + "\n";
         try {
           writer.write(message);
         } catch (Exception e) {
@@ -766,11 +795,11 @@ System.out.println("Person" + ID + "::step(). The clock is now " + Sim.instance(
    * FIX: Is this essentially just "get a bag of all the people who are in
    * one or more of this person's groups"? */
   public Bag getPeopleInGroups( ){
-    Bag groupmates = new Bag( );
+    Bag groupmates = new Bag();
     boolean addPerson;
     boolean first = true;
     for(int x = 0; x < groups.size( ); x++){
-      for(int y = 0; y < groups.get(x).getSize( ); y++){
+      for(int y = 0; y < groups.get(x).getSize(); y++){
         addPerson = true;
         Person personToAdd = groups.get(x).getPersonAtIndex(y);
         if(first){
@@ -778,7 +807,7 @@ System.out.println("Person" + ID + "::step(). The clock is now " + Sim.instance(
             groupmates.add(personToAdd);
           }
         }else{
-          for(int z = 0; z < groupmates.size( ); z++){
+          for(int z = 0; z < groupmates.size(); z++){
             if(personToAdd.equals(groupmates.get(z))){
               addPerson = false;
             }
@@ -852,5 +881,12 @@ System.out.println("Person" + ID + "::step(). The clock is now " + Sim.instance(
     year++;
   }
 
+  public boolean hasFullData(){
+    if(attributesK2Year0!=null&&attributesK2Year1!=null&&attributesK2Year3!=null&&attributesK2!=null&&attributesK3Year0!=null&&attributesK3Year1!=null&&attributesK3Year3!=null&&attributesK3!=null){
+      return true;
+    }else{
+      return false;
+    }
+  }
 
 }

@@ -128,6 +128,21 @@ public class Sim extends SimState implements Steppable{
         PrefoutF= new File("preferencesGraduate.csv");
         FoutF.delete();
         */
+
+        try{
+            File file = new File("preferencesGraduate.csv");
+            file.delete();
+            file = new File("preferencesDropout.csv");
+            file.delete();
+            file = new File("averageIndependentChange.csv");
+            file.delete();
+            file = new File("averageDependentChange.csv");
+            file.delete();
+            }catch(Exception e){
+            e.printStackTrace();
+ 
+        }
+
 		for(int i=0; i<INIT_NUM_PEOPLE; i++){
             //Create a new student with the desired student ID. Here,
             //currentStudentID and i will be identical. But we want to
@@ -258,6 +273,65 @@ public class Sim extends SimState implements Steppable{
                 System.exit(1);
             }
             x.printPreferencesToFile(PrefoutWriter);
+
+
+            if(PrefoutWriter!=null){
+            try{
+                PrefoutWriter.close();
+            }catch(IOException e){
+                System.out.println("Could not close file");
+            }
+        }
+        try{
+                PrefoutF = new File("averageIndependentChange.csv");
+                if(!PrefoutF.exists()){
+                    PrefoutF.createNewFile();
+                    try {
+                        PrefoutWriter = new BufferedWriter(new FileWriter(PrefoutF, true));
+                        PrefoutWriter.write("\"ID\", \"numFriends\", \"numGroups\", \"averagePercentChance\"\n");
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                PrefoutWriter = new BufferedWriter(new FileWriter(PrefoutF, true));
+            }catch(IOException e){
+                System.out.println("Couldn't create file");
+                e.printStackTrace();
+                System.exit(1);
+            }
+            if(x.hasFullData()){
+                x.printIndependentToFile(PrefoutWriter);
+            }
+
+        if(PrefoutWriter!=null){
+            try{
+                PrefoutWriter.close();
+            }catch(IOException e){
+                System.out.println("Could not close file");
+            }
+        }
+        try{
+                PrefoutF = new File("averageDependentChange.csv");
+                if(!PrefoutF.exists()){
+                    PrefoutF.createNewFile();
+                    try {
+                        PrefoutWriter = new BufferedWriter(new FileWriter(PrefoutF, true));
+                        PrefoutWriter.write("\"ID\", \"numFriends\", \"numGroups\", \"averagePercentChance\"\n");
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                PrefoutWriter = new BufferedWriter(new FileWriter(PrefoutF, true));
+            }catch(IOException e){
+                System.out.println("Couldn't create file");
+                e.printStackTrace();
+                System.exit(1);
+            }
+            if(x.hasFullData()){
+                x.printDependentToFile(PrefoutWriter);
+            }
+
+
     }
 
     public void dumpPreferencesOfDropoutStudent(Person x){
