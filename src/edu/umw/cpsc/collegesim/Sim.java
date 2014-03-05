@@ -12,7 +12,6 @@ import java.util.ArrayList;
 
 /** The top-level singleton simulation class, with main(). */
 public class Sim extends SimState implements Steppable{
-	
     /**
      * A graph where each node is a student and each edge is a friendship between
      * those students. It is undirected. */
@@ -358,7 +357,7 @@ public class Sim extends SimState implements Steppable{
 
 	public void step(SimState state){
 
-System.out.println("Sim::step(). The clock is now " + schedule.getTime());
+//System.out.println("Sim::step(). The clock is now " + schedule.getTime());
 		if(!isEndOfSim()) {
 
 			if(nextMonthInAcademicYear()){
@@ -369,18 +368,18 @@ System.out.println("Sim::step(). The clock is now " + schedule.getTime());
                  */
                 System.out.println("---------------");
                 System.out.println("Starting year: "+getCurrYearNum());
-Bag b = peopleGraph.getAllNodes();
-boolean itIsInThere = false;
-for (int i=0; i<b.size(); i++) {
-    if (((Person)b.get(i)).getID() == 92) {
-        itIsInThere = true;
-    }
-}
-if (itIsInThere) {
-System.out.println("At start of year, 92 is IN the graph.");
-} else {
-System.out.println("At start of year, 92 is NOT in the graph.");
-}
+//Bag b = peopleGraph.getAllNodes();
+//boolean itIsInThere = false;
+//for (int i=0; i<b.size(); i++) {
+//    if (((Person)b.get(i)).getID() == personInQuestion) {
+//        itIsInThere = true;
+//    }
+//}
+//if (itIsInThere) {
+//System.out.println("At start of year, " + personInQuestion + " is IN the graph.");
+//} else {
+//System.out.println("At start of year, " + personInQuestion + " is NOT in the graph.");
+//}
 				for(int x = 0; x<peopleList.size(); x++){
 					//Platypus
 					//Is this something we need to track in the graph?
@@ -455,8 +454,8 @@ System.out.println("At start of year, 92 is NOT in the graph.");
 					}
 					for(int x = 0; x<groups.size(); x++){
 						if(random.nextDouble(true, true)>.75){
-							System.out.println("Removing group " +
-                                groups.get(x).getID());
+//							System.out.println("Removing group " +
+//                                groups.get(x).getID());
 							toRemoveGroups.add(groups.get(x));
 						}
 					}
@@ -473,9 +472,6 @@ System.out.println("At start of year, 92 is NOT in the graph.");
 
 						//remove the person from the graph of people and friendships
 						peopleGraph.removeNode(toRemove.get(x));
-if (toRemove.get(x).getID() == 92) {
-System.out.println("I just removed 92!");
-}
 					}
 					toRemoveGroups.clear();
 					toRemove.clear();
@@ -485,18 +481,18 @@ System.out.println("I just removed 92!");
                  * Schedule myself to wake up in August.
                  */
 				schedule.scheduleOnceIn(NUM_MONTHS_IN_SUMMER, this);
-Bag b = peopleGraph.getAllNodes();
-boolean itIsInThere = false;
-for (int i=0; i<b.size(); i++) {
-    if (((Person)b.get(i)).getID() == 92) {
-        itIsInThere = true;
-    }
-}
-if (itIsInThere) {
-System.out.println("92 is IN the graph.");
-} else {
-System.out.println("92 is NOT in the graph.");
-}
+//Bag b = peopleGraph.getAllNodes();
+//boolean itIsInThere = false;
+//for (int i=0; i<b.size(); i++) {
+//    if (((Person)b.get(i)).getID() == personInQuestion) {
+//        itIsInThere = true;
+//    }
+//}
+//if (itIsInThere) {
+//System.out.println(personInQuestion + " is IN the graph.");
+//} else {
+//System.out.println(personInQuestion + " is NOT in the graph.");
+//}
 			}
 		}else{
 			schedule.seal();
