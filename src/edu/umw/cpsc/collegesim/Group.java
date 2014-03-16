@@ -144,9 +144,9 @@ public class Group implements Steppable{
         return false;
     }
   
-    public boolean equals(Group a){
-        return (id==a.getID());
-    }
+//    public boolean equals(Group a){
+//        return (id==a.getID());
+//    }
 
     /**
      * Return a number from 0 to 1 indicating the degree of affinity the
@@ -347,7 +347,7 @@ public class Group implements Steppable{
      * already a member, does nothing. */
     public void removeStudent(Person p){
       for(int x = 0; x<students.size(); x++){
-          if(students.get(x).equals(p)){
+          if(students.get(x).getID( ) == p.getID( )){
             students.remove(x);
           }
       }

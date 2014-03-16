@@ -344,16 +344,10 @@ public class Person implements Steppable{
     //if they become friends, add their edge to the network
     //and reset when they met
     if(friends){
-if (personToMeet.ID == 92) {
-    System.out.println("Yay! " + ID + " and 92 are friends!");
-}
         Sim.peopleGraph.addEdge(this, personToMeet, 1);
         refreshLastTickleTime(personToMeetID);
         personToMeet.refreshLastTickleTime(ID);
     }
-if (personToMeet.ID == 92 && !friends) {
-    System.out.println("Sad face! " + ID + " and 92 are not friends!");
-}
   }
   
   /**
@@ -374,7 +368,7 @@ if (personToMeet.ID == 92 && !friends) {
    * friends, they have a chance to become so, and may be by the time this
    * method returns. If they <i>are</i> already friends, their friendship
    * will be "tickled" (refreshed). */
-  private void encounter(int number, Bag pool, boolean where){
+  private void encounter(int number, Bag pool){
     if(pool.size( ) < number){
       number = pool.size( );
     }
@@ -383,23 +377,11 @@ if (personToMeet.ID == 92 && !friends) {
       do{
         personToMeet = (Person) pool.get(generator.nextInt(pool.size( )));
       }while(personToMeet.ID == ID);
-if (personToMeet.ID == 92) {
-System.out.println("Hey! Person " + ID + " is going to meet 92!");
-}
       if(friendsWith(personToMeet)){
-if (personToMeet.ID == 92) {
-System.out.println("We're going to tickle them...");
-}
         tickle(personToMeet);
       }else{
-if (personToMeet.ID == 92) {
-System.out.println("We're going to meet them...");
-}
         meet(personToMeet);
       }
-if (personToMeet.ID == 92) {
-System.out.println("We're outta here...");
-}
     }
   }
   
@@ -419,18 +401,19 @@ System.out.println("We're outta here...");
    * <p>Note that Persons only step during academic months.</p>
    */
   public void step(SimState state){
-System.out.println("Person" + ID + "::step(). The clock is now " + Sim.instance().schedule.getTime());
+	    Bag peopleBag = Sim.peopleGraph.getAllNodes( );
+	    if(!peopleBag.contains(this)){
+	        return;
+	    }
     //Get a bag of all the people in the groups
     Bag groupBag = getPeopleInGroups( );
-    encounter(NUM_TO_MEET_GROUP, groupBag, true);
-    //Get a bag of all the people and then encounter some number of those people
-    Bag peopleBag = Sim.peopleGraph.getAllNodes( );
-    if (!peopleBag.contains(this)) {
-        System.out.println("HOLY MOSES I'M ACTUALLY DEAD!!!!");
-        System.out.println("And this is THE LAST you should ever hear from Student #" + ID + ".");
-        return;
+    if(groupBag.size( ) > 1){
+    	encounter(NUM_TO_MEET_GROUP, groupBag);
     }
-    encounter(NUM_TO_MEET_POP, peopleBag, false);
+    //Get a bag of all the people and then encounter some number of those people
+    if(peopleBag.size( ) > 1){
+    	encounter(NUM_TO_MEET_POP, peopleBag);
+    }
 
 
     //NOTE: Decay only matters if the people are friends- you can't decay a
@@ -590,7 +573,7 @@ System.out.println("Person" + ID + "::step(). The clock is now " + Sim.instance(
   
   boolean isStudentInGroup(Group group){
     for(int x = 0; x<groups.size( ); x++){
-      if(groups.get(x).equals(group)){
+      if(groups.get(x).getID( ) == group.getID( )){
         return true;
       }
     }
@@ -792,7 +775,7 @@ System.out.println("Person" + ID + "::step(). The clock is now " + Sim.instance(
     for(int x = 0; x < groups.size( ); x++){
       for(int y = 0; y < groups.get(x).getSize(); y++){
         for(int z = 0; z < groupmates.size(); z++){
-          if(groups.get(x).getPersonAtIndex(y).equals(groupmates.get(z))){
+          if(groups.get(x).getPersonAtIndex(y).ID == ((Person) groupmates.get(z)).ID){
             repeat = true;    //student is already in this bag, don't add again
           }
         }
@@ -838,9 +821,11 @@ System.out.println("Person" + ID + "::step(). The clock is now " + Sim.instance(
      * still think the Person is a member! See {@link
      * edu.umw.cpsc.collegesim.Group#removeEveryoneFromGroup()}.
      */
-    public  void leaveGroup(Group g){
+    public void leaveGroup(Group g){
         for(int x = 0; x<groups.size(); x++){
-          if(groups.get(x).equals(g)){
+          if(groups.get(x).getID( ) == g.getID( )){
+              //MONTY PYTHON'S HOLY GRAIL RIGHT HERE
+              groups.get(x).removeStudent(this);
             groups.remove(x);
           }
         }
