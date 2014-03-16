@@ -531,28 +531,19 @@ System.out.println("Person" + ID + "::step(). The clock is now " + Sim.instance(
         }
     }
 
-    public void printIndependentToFile(BufferedWriter writer) {
-        double average=0;
+    public void printChangeToFile(BufferedWriter writer) {
+        double indAverage=0;
+        double depAverage=0;
         String message = "";
         for(int x = 0; x < NUM_INDEPENDENT_ATTRIBUTES; x++){
-          average += Math.abs(attributesK2.get(x) - attributesK2Year0.get(x));
+          indAverage += Math.abs(attributesK2.get(x) - attributesK2Year0.get(x));
         }
-        average=average/NUM_INDEPENDENT_ATTRIBUTES;
-        message = message + getID() + " " + Sim.peopleGraph.getEdgesIn(this).size() + " " + groups.size() + " " + average + "\n";
-        try {
-          writer.write(message);
-        } catch (Exception e) {
-          e.printStackTrace();
-        }
-    }
-
-    public void printDependentToFile(BufferedWriter writer) {
-        double average=0;
+        indAverage=indAverage/NUM_INDEPENDENT_ATTRIBUTES;
         for(int x = 0; x < NUM_DEPENDENT_ATTRIBUTES; x++){
-          average += Math.abs(attributesK3.get(x) - attributesK3Year0.get(x));
+          depAverage += Math.abs(attributesK3.get(x) - attributesK3Year0.get(x));
         }
-        average=average/NUM_DEPENDENT_ATTRIBUTES;
-        String message = getID() + " " + Sim.peopleGraph.getEdgesIn(this).size() + " " + groups.size() + " " + average + "\n";
+        depAverage=depAverage/NUM_DEPENDENT_ATTRIBUTES;
+        message = message + getID() + " " + extroversion + " " + Sim.peopleGraph.getEdgesIn(this).size() + " " + groups.size() + " " + depAverage + " " + indAverage + "\n";
         try {
           writer.write(message);
         } catch (Exception e) {
@@ -864,6 +855,9 @@ System.out.println("Person" + ID + "::step(). The clock is now " + Sim.instance(
   public void setYear(int x){
     year = x;
     //store initial attributes
+    if(getID()==54){
+      System.out.println("potato: " + x);
+    }
     if(year==1){
       attributesK2Year0=new ArrayList<Double>(attributesK2);
       attributesK3Year0=new ArrayList<Double>(attributesK3);
@@ -889,6 +883,9 @@ System.out.println("Person" + ID + "::step(). The clock is now " + Sim.instance(
      * Person, possibly to 5 or higher (no validation checking is
      * performed). */
   public void incrementYear(){
+    if(getID()==54){
+      System.out.println("potato: " + (year+1));
+    }
     if(year==1){
       attributesK2Year1=new ArrayList<Double>(attributesK2);
       attributesK3Year1=new ArrayList<Double>(attributesK3);

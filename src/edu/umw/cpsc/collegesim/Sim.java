@@ -134,9 +134,7 @@ public class Sim extends SimState implements Steppable{
             file.delete();
             file = new File("preferencesDropout.csv");
             file.delete();
-            file = new File("averageIndependentChange.csv");
-            file.delete();
-            file = new File("averageDependentChange.csv");
+            file = new File("averageChange.csv");
             file.delete();
             }catch(Exception e){
             e.printStackTrace();
@@ -283,12 +281,11 @@ public class Sim extends SimState implements Steppable{
             }
         }
         try{
-                PrefoutF = new File("averageIndependentChange.csv");
+                PrefoutF = new File("averageChange.csv");
                 if(!PrefoutF.exists()){
                     PrefoutF.createNewFile();
                     try {
                         PrefoutWriter = new BufferedWriter(new FileWriter(PrefoutF, true));
-                        PrefoutWriter.write("\"ID\", \"numFriends\", \"numGroups\", \"averagePercentChance\"\n");
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -300,38 +297,8 @@ public class Sim extends SimState implements Steppable{
                 System.exit(1);
             }
             if(x.hasFullData()){
-                x.printIndependentToFile(PrefoutWriter);
+                x.printChangeToFile(PrefoutWriter);
             }
-
-        if(PrefoutWriter!=null){
-            try{
-                PrefoutWriter.close();
-            }catch(IOException e){
-                System.out.println("Could not close file");
-            }
-        }
-        try{
-                PrefoutF = new File("averageDependentChange.csv");
-                if(!PrefoutF.exists()){
-                    PrefoutF.createNewFile();
-                    try {
-                        PrefoutWriter = new BufferedWriter(new FileWriter(PrefoutF, true));
-                        PrefoutWriter.write("\"ID\", \"numFriends\", \"numGroups\", \"averagePercentChance\"\n");
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-                PrefoutWriter = new BufferedWriter(new FileWriter(PrefoutF, true));
-            }catch(IOException e){
-                System.out.println("Couldn't create file");
-                e.printStackTrace();
-                System.exit(1);
-            }
-            if(x.hasFullData()){
-                x.printDependentToFile(PrefoutWriter);
-            }
-
-
     }
 
     public void dumpPreferencesOfDropoutStudent(Person x){
