@@ -22,24 +22,24 @@ public class Sim extends SimState implements Steppable{
     /**
      * The number of people, of random year-in-college (fresh, soph, etc.)
      * that the simulation will begin with. */
-	public static final int INIT_NUM_PEOPLE = 100;
+	public static final int INIT_NUM_PEOPLE = 4000;
 
 
     /**
      * The number of groups, with random initial membership, that the
      * simulation will begin with. */
-	public static final int INIT_NUM_GROUPS = 30;
+	public static final int INIT_NUM_GROUPS = 200;
 
 
     /**
      * The number of newly enrolling freshmen each year.     */
-	public static final int NUM_PEOPLE_ENROLLING_EACH_YEAR = 25;
+	public static final int NUM_PEOPLE_ENROLLING_EACH_YEAR = 1000;
 
 
     /**
      * The number of groups, with random initial membership, that the
      * simulation will begin with. */
-	public static final int NUM_GROUPS_ADDED_EACH_YEAR = 10;
+	public static final int NUM_GROUPS_ADDED_EACH_YEAR = 100;
 	
     /** The coefficient (see also {@link #DROPOUT_INTERCEPT}) of a linear
      * equation to transform alienation to probability of
@@ -180,8 +180,7 @@ public class Sim extends SimState implements Steppable{
 	public static void main(String[] args) throws IOException {
         doLoop(new MakesSimState() { 
             public SimState newInstance(long seed, String[] args) {
-// For now, let's just use SEED as defined above every time.
-// Sim.SEED = seed;
+ Sim.SEED = seed;
                 return instance();
             }
             public Class simulationClass() {

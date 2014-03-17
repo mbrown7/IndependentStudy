@@ -75,22 +75,22 @@ public class Person implements Steppable{
      * friendship. If x is the perceived similarity, then y=mx+b, where m
      * is the FRIENDSHIP_COEFFICIENT and b the FRIENDSHIP_INTERCEPT gives
      * the probability of becoming friends. */
-    public static final double FRIENDSHIP_COEFFICIENT = .7;
+    public static final double FRIENDSHIP_COEFFICIENT = .6;
 
     /** See {@link #FRIENDSHIP_COEFFICIENT}. */
-    public static final double FRIENDSHIP_INTERCEPT = .2;
+    public static final double FRIENDSHIP_INTERCEPT = .1;
   
     /** Each time step (= 1 month), how many other people from a person's 
      * groups that person will encounter. Note that this number is only
      * unidirectional; <i>i.e.</i>, this person may well "be met by" 
      * numerous other people when their step() methods run. */
-    public static final int NUM_TO_MEET_GROUP = 2;
+    public static final int NUM_TO_MEET_GROUP = 5;
 
     /** Each time step (= 1 month), how many other people from the overall
      * student body a person will encounter. Note that this number is only
      * unidirectional; <i>i.e.</i>, this person may well "be met by" 
      * numerous other people when their step() methods run. */
-    public static final int NUM_TO_MEET_POP = 1;
+    public static final int NUM_TO_MEET_POP = 10;
 
     
 
