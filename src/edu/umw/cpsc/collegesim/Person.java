@@ -75,22 +75,22 @@ public class Person implements Steppable{
      * friendship. If x is the perceived similarity, then y=mx+b, where m
      * is the FRIENDSHIP_COEFFICIENT and b the FRIENDSHIP_INTERCEPT gives
      * the probability of becoming friends. */
-    public static final double FRIENDSHIP_COEFFICIENT = .6;
+    public static final double FRIENDSHIP_COEFFICIENT = .3;
 
     /** See {@link #FRIENDSHIP_COEFFICIENT}. */
-    public static final double FRIENDSHIP_INTERCEPT = .1;
+    public static final double FRIENDSHIP_INTERCEPT = .05;
   
     /** Each time step (= 1 month), how many other people from a person's 
      * groups that person will encounter. Note that this number is only
      * unidirectional; <i>i.e.</i>, this person may well "be met by" 
      * numerous other people when their step() methods run. */
-    public static final int NUM_TO_MEET_GROUP = 5;
+    public static final int NUM_TO_MEET_GROUP = 10;
 
     /** Each time step (= 1 month), how many other people from the overall
      * student body a person will encounter. Note that this number is only
      * unidirectional; <i>i.e.</i>, this person may well "be met by" 
      * numerous other people when their step() methods run. */
-    public static final int NUM_TO_MEET_POP = 10;
+    public static final int NUM_TO_MEET_POP = 5;
 
     
 
@@ -98,8 +98,7 @@ public class Person implements Steppable{
     private int year;
     private static MersenneTwisterFast generator = Sim.instance( ).random;
     private Normal normal = new Normal(.5, .15, generator);
-    private static int numTimes = 1;
-    private static final int DECAY_THRESHOLD = 4;
+    private static final int DECAY_THRESHOLD = 2;
     
     private Race race;
     private Gender gender;
@@ -209,15 +208,34 @@ public class Person implements Steppable{
     }
     
     private void decay( ){
+    	int qid = 4997;
+    	boolean print = false;
+    	if(ID == qid){
+    		print = true;
+    	}
+    	if(print){
+    		System.out.println("decay");
+    	}
         Enumeration<Integer> friendIDs = lastTickleTime.keys();
         while (friendIDs.hasMoreElements()) {
             int friendID = friendIDs.nextElement();
-
+if(print){
+	System.out.println("In while, " + friendID);
+}
             Edge toRemoveIn = null;
             Edge toRemoveOut = null;
             double val = lastTickleTime.get(friendID);
+            if(print){
+            	System.out.println("last tickle time " + val);
+            }
             //if the people last met longer than the threshold ago
-            if(Sim.instance().schedule.getTime() - val > DECAY_THRESHOLD){
+            if(print){
+            System.out.println("Currrent time " + Sim.instance( ).schedule.getTime( ));
+            }
+            if(Sim.instance().schedule.getTime() - val >= DECAY_THRESHOLD){
+            	if(print){
+            		System.out.println("In if");
+            	}
               //Get a bag of all the edges into this person
               Bag bIn = Sim.peopleGraph.getEdgesIn(this);
               //for each of these edges
@@ -401,6 +419,11 @@ public class Person implements Steppable{
    * <p>Note that Persons only step during academic months.</p>
    */
   public void step(SimState state){
+	  boolean print = false;
+	  if(ID == 4997){
+		  print = true;
+		  System.out.println("Stepping " + ID);
+	  }
 	    Bag peopleBag = Sim.peopleGraph.getAllNodes( );
 	    if(!peopleBag.contains(this)){
 	        return;
@@ -423,14 +446,15 @@ public class Person implements Steppable{
     //friends this turn, then -1 for last met is fine (unless we
     //implement something where if two people meet enough times, they
     //become friends by brute force)
-    
+    if(print){
+    	System.out.println("About to decay " + ID);
+    }
     //Now we want to see if any of the friendships have decayed
     decay( );
     
-    //If we've done the maximum number of iterations, then stop; otherwise, 
-    //keep stepping
-    if(numTimes >= Sim.MAX_ITER){
-    }else{
+    	if(print){
+    		System.out.println("About to schedule");
+    	}
             if (Sim.instance().nextMonthInAcademicYear()) {
                 // It's not the end of the academic year yet. Run again
                 // next month.
@@ -440,8 +464,6 @@ public class Person implements Steppable{
                 Sim.instance( ).schedule.scheduleOnceIn(
                     Sim.NUM_MONTHS_IN_SUMMER + 1, this);
             }
-    }
-    numTimes++;
   }
 
     /**
@@ -840,9 +862,6 @@ public class Person implements Steppable{
   public void setYear(int x){
     year = x;
     //store initial attributes
-    if(getID()==54){
-      System.out.println("potato: " + x);
-    }
     if(year==1){
       attributesK2Year0=new ArrayList<Double>(attributesK2);
       attributesK3Year0=new ArrayList<Double>(attributesK3);
@@ -868,9 +887,6 @@ public class Person implements Steppable{
      * Person, possibly to 5 or higher (no validation checking is
      * performed). */
   public void incrementYear(){
-    if(getID()==54){
-      System.out.println("potato: " + (year+1));
-    }
     if(year==1){
       attributesK2Year1=new ArrayList<Double>(attributesK2);
       attributesK3Year1=new ArrayList<Double>(attributesK3);

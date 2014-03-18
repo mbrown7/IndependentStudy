@@ -399,9 +399,9 @@ public class Sim extends SimState implements Steppable{
 						Person student = peopleList.get(x);
 						//If they have more than four years, they graduate
 						if(student.getYear( ) >= 4){
-							System.out.println("Person " + 
-                                student.getID() +
-                                " has graduated! Congrats!");
+//							System.out.println("Person " + 
+  //                              student.getID() +
+    //                            " has graduated! Congrats!");
                             dumpPreferencesOfGraduatedStudent(student);
 							toRemove.add(student);
 						//Otherwise
@@ -411,8 +411,8 @@ public class Sim extends SimState implements Steppable{
 							//If they feel alienated, they have a chance to drop out
 							double dropChance = random.nextDouble( );
 							if(dropChance <= alienation){
-								System.out.println("Person " + student.getID( ) +
-										" has dropped out of school.");
+//								System.out.println("Person " + student.getID( ) +
+//										" has dropped out of school.");
                                 dumpPreferencesOfDropoutStudent(student);
 								toRemove.add(student);
 							}

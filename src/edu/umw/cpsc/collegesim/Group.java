@@ -248,7 +248,7 @@ public class Group implements Steppable{
       if(rand.nextDouble(true,true)<
             LIKELIHOOD_OF_RANDOMLY_LEAVING_GROUP && 
             students.size()>MINIMUM_GROUP_SIZE){
-        System.out.println("Person " + p.getID() + " has randomly left group " + getID());
+    //    System.out.println("Person " + p.getID() + " has randomly left group " + getID());
         p.leaveGroup(this);
         removeStudent(p);
       }
