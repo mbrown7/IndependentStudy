@@ -24,7 +24,7 @@ public class Person implements Steppable{
     /**
      * Baseline prior probability that a newly generated student will be of
      * race "WHITE". */
-    public static final double PROBABILITY_WHITE = .8;
+    public static double PROBABILITY_WHITE;
 
     /**
      * Baseline prior probability that a newly generated student will be of
@@ -75,7 +75,7 @@ public class Person implements Steppable{
      * friendship. If x is the perceived similarity, then y=mx+b, where m
      * is the FRIENDSHIP_COEFFICIENT and b the FRIENDSHIP_INTERCEPT gives
      * the probability of becoming friends. */
-    public static final double FRIENDSHIP_COEFFICIENT = .3;
+    public static final double FRIENDSHIP_COEFFICIENT = .22;
 
     /** See {@link #FRIENDSHIP_COEFFICIENT}. */
     public static final double FRIENDSHIP_INTERCEPT = .05;
@@ -109,20 +109,20 @@ public class Person implements Steppable{
     /** The total number of "constant" attributes in the system. (See {@link
      * #CONST_WEIGHT}.) Each person will have a boolean value for each,
      * indicating whether they do (or do not) possess the attribute. */
-    public static int CONSTANT_ATTRIBUTE_POOL = 10;
+    public static int CONSTANT_ATTRIBUTE_POOL = 100;
     private ArrayList<Boolean> attributesK1     //Constant attributes
         = new ArrayList<Boolean>(
             Collections.nCopies(CONSTANT_ATTRIBUTE_POOL, false));
   
     /** The number of "independent" attributes each person has. (See {@link
      * #INDEP_WEIGHT}.) */
-    public static int NUM_INDEPENDENT_ATTRIBUTES = 2;
+    public static int NUM_INDEPENDENT_ATTRIBUTES = 20;
 
     /** The total number of "independent" attributes in the system. (See 
      * {@link #INDEP_WEIGHT}.) Each person will either have the attribute or
      * not; and if they do, they will have a double value assigned
      * indicating its strength. */
-    public static int INDEPENDENT_ATTRIBUTE_POOL = 5;
+    public static int INDEPENDENT_ATTRIBUTE_POOL = 50;
     //independent attributes, which can change but do not affect each other
     private ArrayList<Double> attributesK2      //Independent attributes
       = new ArrayList<Double>(Collections.nCopies(
@@ -136,13 +136,12 @@ public class Person implements Steppable{
   
     /** The number of "dependent" attributes each person has. (See {@link
      * #DEP_WEIGHT}.) */
-    public static int NUM_DEPENDENT_ATTRIBUTES = 2;
-
+    public static int NUM_DEPENDENT_ATTRIBUTES = 20;
     /** The total number of "dependent" attributes in the system. (See 
      * {@link #DEP_WEIGHT}.) Each person will either have the attribute or
      * not; and if they do, they will have a double value assigned
      * indicating its strength. */
-    public static int DEPENDENT_ATTRIBUTE_POOL = 5;
+    public static int DEPENDENT_ATTRIBUTE_POOL = 50;
 
     //dependent attributes, which can change but you only have 1 unit to 
     //split among them
@@ -208,20 +207,9 @@ public class Person implements Steppable{
     }
     
     private void decay( ){
-    	int qid = 4997;
-    	boolean print = false;
-    	if(ID == qid){
-    		print = true;
-    	}
-    	if(print){
-    		System.out.println("decay");
-    	}
         Enumeration<Integer> friendIDs = lastTickleTime.keys();
         while (friendIDs.hasMoreElements()) {
             int friendID = friendIDs.nextElement();
-if(print){
-	System.out.println("In while, " + friendID);
-}
             Edge toRemoveIn = null;
             Edge toRemoveOut = null;
             double val = lastTickleTime.get(friendID);
@@ -229,13 +217,7 @@ if(print){
             	System.out.println("last tickle time " + val);
             }
             //if the people last met longer than the threshold ago
-            if(print){
-            System.out.println("Currrent time " + Sim.instance( ).schedule.getTime( ));
-            }
             if(Sim.instance().schedule.getTime() - val >= DECAY_THRESHOLD){
-            	if(print){
-            		System.out.println("In if");
-            	}
               //Get a bag of all the edges into this person
               Bag bIn = Sim.peopleGraph.getEdgesIn(this);
               //for each of these edges
@@ -419,11 +401,6 @@ if(print){
    * <p>Note that Persons only step during academic months.</p>
    */
   public void step(SimState state){
-	  boolean print = false;
-	  if(ID == 4997){
-		  print = true;
-		  System.out.println("Stepping " + ID);
-	  }
 	    Bag peopleBag = Sim.peopleGraph.getAllNodes( );
 	    if(!peopleBag.contains(this)){
 	        return;
@@ -446,15 +423,9 @@ if(print){
     //friends this turn, then -1 for last met is fine (unless we
     //implement something where if two people meet enough times, they
     //become friends by brute force)
-    if(print){
-    	System.out.println("About to decay " + ID);
-    }
     //Now we want to see if any of the friendships have decayed
     decay( );
     
-    	if(print){
-    		System.out.println("About to schedule");
-    	}
             if (Sim.instance().nextMonthInAcademicYear()) {
                 // It's not the end of the academic year yet. Run again
                 // next month.
@@ -528,7 +499,10 @@ if(print){
     }
 
     public void printPreferencesToFile(BufferedWriter writer) {
-        String message = this.getID( ) + ":\nConstant: " + attributesK1 + "\nK2Year0: " + attributesK2Year0 + "\nK3Year0: " + attributesK3Year0 + "\nK2Year1: " + attributesK2Year1 + "\nK3Year1: " + attributesK3Year1 + "\nK2Year2: " + attributesK2Year2 + "\nK3Year2: " + attributesK3Year2 + "\nK2Year3: " + attributesK2Year3 + "\nK3Year3: " + attributesK3Year3 + "\nK2Year4: " + attributesK2 + "\nK3Year4: " + attributesK3 + "\n";
+        String message = this.getID( ) + ",";
+        Bag b = Sim.peopleGraph.getEdgesIn(this);
+        int numFriends = b.size( );
+        message = message + numFriends + "," + race + "," + this.getAlienation() + "," + year + "\n";
         try {
           writer.write(message);
         } catch (Exception e) {

@@ -17,7 +17,8 @@ public class Sim extends SimState implements Steppable{
      * those students. It is undirected. */
 	public static Network peopleGraph = new Network(false);
 
-//	public static Network lastMet = new Network(false);
+	public static int currentTrial;
+	public static double param;
 
     /**
      * The number of people, of random year-in-college (fresh, soph, etc.)
@@ -128,7 +129,7 @@ public class Sim extends SimState implements Steppable{
         FoutF.delete();
         */
 
-        try{
+        /*try{
             File file = new File("preferencesGraduate.csv");
             file.delete();
             file = new File("preferencesDropout.csv");
@@ -138,7 +139,7 @@ public class Sim extends SimState implements Steppable{
             }catch(Exception e){
             e.printStackTrace();
  
-        }
+        }*/
 
 		for(int i=0; i<INIT_NUM_PEOPLE; i++){
             //Create a new student with the desired student ID. Here,
@@ -181,6 +182,9 @@ public class Sim extends SimState implements Steppable{
         doLoop(new MakesSimState() { 
             public SimState newInstance(long seed, String[] args) {
  Sim.SEED = seed;
+		currentTrial = Integer.parseInt(args[0]);
+		param = Double.parseDouble(args[1]);
+		Person.PROBABILITY_WHITE = args[1];
                 return instance();
             }
             public Class simulationClass() {
@@ -215,7 +219,7 @@ public class Sim extends SimState implements Steppable{
         }
         //if((int)(schedule.getTime()/NUM_MONTHS_IN_YEAR)!=NUM_SIMULATION_YEARS){
         if(!isEndOfSim()){
-            String f="year"+(int) (schedule.getTime()/NUM_MONTHS_IN_YEAR)+".csv";
+            String f="P"+param+"T"+currentTrial+"year"+(int) (schedule.getTime()/NUM_MONTHS_IN_YEAR)+".csv";
             try{
                 outF = new File(f);
                 outF.createNewFile( );
@@ -233,7 +237,7 @@ public class Sim extends SimState implements Steppable{
             }
             
             //FILE OF FRIENDSHIPS
-            String ff="edges"+(int) (schedule.getTime()/NUM_MONTHS_IN_YEAR)+".csv";
+            String ff="P"+param+"T"+currentTrial+"edges"+(int) (schedule.getTime()/NUM_MONTHS_IN_YEAR)+".csv";
             try{
                 FoutF = new File(ff);
                 FoutF.createNewFile();
@@ -257,7 +261,7 @@ public class Sim extends SimState implements Steppable{
                 System.out.println("Could not close file");
             }
         }
-        try{
+        /*try{
                 PrefoutF = new File("preferencesGraduate.csv");
                 if(!PrefoutF.exists()){
                     PrefoutF.createNewFile();
@@ -268,7 +272,7 @@ public class Sim extends SimState implements Steppable{
                 e.printStackTrace();
                 System.exit(1);
             }
-            x.printPreferencesToFile(PrefoutWriter);
+            x.printPreferencesToFile(PrefoutWriter);*/
 
 
             if(PrefoutWriter!=null){
@@ -278,7 +282,7 @@ public class Sim extends SimState implements Steppable{
                 System.out.println("Could not close file");
             }
         }
-        try{
+        /*try{
                 PrefoutF = new File("averageChange.csv");
                 if(!PrefoutF.exists()){
                     PrefoutF.createNewFile();
@@ -296,7 +300,7 @@ public class Sim extends SimState implements Steppable{
             }
             if(x.hasFullData()){
                 x.printChangeToFile(PrefoutWriter);
-            }
+            }*/
     }
 
     public void dumpPreferencesOfDropoutStudent(Person x){
@@ -308,7 +312,8 @@ public class Sim extends SimState implements Steppable{
             }
         }
         try{
-                PrefoutF = new File("preferencesDropout.csv");
+		String string = "P"+param+"T"+currentTrial+"dropout.csv";
+                PrefoutF = new File(string);
                 if(!PrefoutF.exists()){
                     PrefoutF.createNewFile();
                 }
