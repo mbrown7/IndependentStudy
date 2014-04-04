@@ -184,7 +184,7 @@ public class Sim extends SimState implements Steppable{
  Sim.SEED = seed;
 		currentTrial = Integer.parseInt(args[0]);
 		param = Double.parseDouble(args[1]);
-		Person.PROBABILITY_WHITE = args[1];
+		Person.PROBABILITY_WHITE = Double.parseDouble(args[1]);
                 return instance();
             }
             public Class simulationClass() {

@@ -213,9 +213,6 @@ public class Person implements Steppable{
             Edge toRemoveIn = null;
             Edge toRemoveOut = null;
             double val = lastTickleTime.get(friendID);
-            if(print){
-            	System.out.println("last tickle time " + val);
-            }
             //if the people last met longer than the threshold ago
             if(Sim.instance().schedule.getTime() - val >= DECAY_THRESHOLD){
               //Get a bag of all the edges into this person
